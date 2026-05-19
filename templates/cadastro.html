@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIVIS - Criar Conta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <header class="bg-blue-700 text-white px-4 py-3 shadow-md flex items-center justify-between">
+        <div>
+            <a href="/" class="text-xl font-bold hover:opacity-80 transition">CIVIS</a>
+            <p class="text-xs opacity-70">Painel de Ocorrências Urbanas</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/login" class="text-sm border border-white text-white px-3 py-1.5 rounded hover:bg-white hover:text-blue-700 transition">Entrar</a>
+            <a href="/cadastro" class="text-sm bg-white text-blue-700 font-semibold px-3 py-1.5 rounded hover:bg-blue-50 transition">Criar conta</a>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b border-gray-200 px-4 py-2 text-xs text-gray-400 flex items-center gap-1">
+        <a href="/" class="hover:text-blue-600 transition">Início</a>
+        <span>›</span>
+        <span class="text-gray-600 font-medium">Criar conta</span>
+    </div>
+
+    <main class="p-4 max-w-md mx-auto w-full flex-grow flex flex-col justify-center">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+
+            <div class="flex items-center gap-2 mb-5">
+                <div class="bg-blue-100 text-blue-700 rounded-lg p-2 text-lg">🙎🏻‍♂️</div>
+                <div>
+                    <h2 class="text-base font-semibold text-gray-700">Criar nova conta</h2>
+                    <p class="text-xs text-gray-400">Junte-se à fiscalização comunitária</p>
+                </div>
+            </div>
+
+            <form action="/cadastro" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Nome completo</label>
+                    <input type="text" name="nome" required placeholder="Seu nome"
+                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">E-mail</label>
+                    <input type="email" name="email" required placeholder="seu@email.com"
+                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Senha</label>
+                    <input type="password" name="senha" required placeholder="••••••••" id="senha"
+                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Confirmar senha</label>
+                    <input type="password" name="confirmar_senha" required placeholder="••••••••" id="confirmar"
+                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <p id="erro-senha" class="text-xs text-red-500 bg-red-50 border border-red-200 p-2 rounded-lg hidden">
+                    ⚠️ As senhas não coincidem.
+                </p>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-sm">
+                    Criar conta
+                </button>
+            </form>
+
+            <p class="text-sm text-center text-gray-500 mt-4">
+                Já tem conta?
+                <a href="/login" class="text-blue-600 font-semibold hover:underline">Entrar</a>
+            </p>
+        </div>
+    </main>
+
+    <footer class="text-center text-xs text-gray-400 py-4 border-t border-gray-200">
+        CIVIS · CETI Zacarias de Góis · Do Piauí para o Mundo 2026
+    </footer>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const senha = document.getElementById('senha').value;
+            const confirmar = document.getElementById('confirmar').value;
+            const erro = document.getElementById('erro-senha');
+            if (senha !== confirmar) {
+                e.preventDefault();
+                erro.classList.remove('hidden');
+            } else {
+                erro.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
