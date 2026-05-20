@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS denuncias (
 # Cria a tabela "usuario" (Corrigida aqui)
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS usuario (
-    cpf TEXT PRIMARY KEY NOT NULL,
     id INTEGER,
     name TEXT NOT NULL,
     email TEXT NOT NULL, 
