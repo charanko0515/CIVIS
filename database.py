@@ -1,10 +1,9 @@
 import sqlite3
 
-# Conecta ao arquivo do banco se não existir, ele cria automaticamente
 conexao = sqlite3.connect('database.db')
 cursor = conexao.cursor()
 
-# Cria a tabela "denuncias" com os campos necessários para o MVP
+# Cria a tabela "denuncias" (Esta já estava perfeita!)
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS denuncias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,7 +11,19 @@ CREATE TABLE IF NOT EXISTS denuncias (
     latitude REAL NOT NULL,
     longitude REAL NOT NULL,
     foto_caminho TEXT NOT NULL,
-    data_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+    data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    descriacao TEXT NOT NULL
+)
+''')
+
+# Cria a tabela "usuario" (Corrigida aqui)
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS usuario (
+    cpf TEXT PRIMARY KEY NOT NULL,
+    id INTEGER,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL, 
+    password TEXT NOT NULL
 )
 ''')
 
@@ -20,4 +31,4 @@ CREATE TABLE IF NOT EXISTS denuncias (
 conexao.commit()
 conexao.close()
 
-print("Banco de dados 'banco.db' criado e pronto para uso!")
+print("Banco de dados 'database.db' criado e pronto para uso!")
