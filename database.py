@@ -19,10 +19,12 @@ CREATE TABLE IF NOT EXISTS denuncias (
 # Cria a tabela usuario
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS usuario (
-    id INTEGER,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cpf TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    email TEXT NOT NULL, 
-    password TEXT NOT NULL
+    email TEXT UNIQUE NOT NULL, 
+    password TEXT NOT NULL,
+    data_criacão DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ''')
 

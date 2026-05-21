@@ -1,53 +1,150 @@
 from flask import Flask, request, render_template, redirect
+import sqlite3
+import os
 from datetime import datetime
-import sqlite3, os
 
 app = Flask(__name__)
 
-def db(query, params=()):
-    con = sqlite3.connect('database.db')
-    cur = con.cursor()
-    cur.execute(query, params)
-    con.commit()
-    lastrow = cur.lastrowid
-    con.close()
-    return lastrow
 
+UPLOAD_FOLDER = 'static/uploads'
+
+
+# =========================
+# FUNÇÃO DE CONEXÃO
+# =========================
+def conectar():
+    return sqlite3.connect('database.py')
+
+
+# =========================
+# PÁGINAS
+# =========================
 @app.route('/')
-def index():
+def home():
     return render_template('homepage.html')
+
 
 @app.route('/login')
 def login():
     return render_template('login.html')
 
-@app.route('/cadastro', methods=['GET', 'POST'])
+
+@app.route('/cadastro')
 def cadastro():
-    if request.method == 'POST':
-        db("INSERT INTO usuario (name,cpf, email, password) VALUES (?, ?, ?, ?)",
-           (request.form.get('nome'), request.form.get('email'), request.form.get('senha')))
-        return redirect('/login')
     return render_template('cadastro.html')
 
+
+@app.route('/denuncia')
+def denuncia():
+    return render_template('denuncia.html')
+
+
+# =========================
+# CADASTRO DE USUÁRIO
+# =========================
+@app.route('/cadastro', methods=['POST'])
+def cadastrar_usuario():
+
+    cpf = request.form.get('cpf')
+    nome = request.form.get('name')
+    email = request.form.get('email')
+    senha = request.form.get('senha')
+
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        INSERT INTO usuario (cpf, name, email, password)
+        VALUES (?, ?, ?, ?)
+    """, (cpf, nome, email, senha))
+
+    conexao.commit()
+    conexao.close()
+
+    return redirect('/login')
+
+
+# =========================
+# LOGIN
+# =========================
+@app.route('/login', methods=['POST'])
+def fazer_login():
+
+    cpf = request.form.get('cpf')
+    senha = request.form.get('senha')
+
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT * FROM usuario
+        WHERE cpf = ? AND password = ?
+    """, (cpf, senha))
+
+    usuario = cursor.fetchone()
+
+    conexao.close()
+
+    if usuario:
+        return redirect('/')
+
+    return 'CPF ou senha inválidos'
+
+
+# =========================
+# RECEBER DENÚNCIA
+# =========================
 @app.route('/receber_denuncia', methods=['POST'])
 def receber_denuncia():
+
+    categoria = request.form.get('categoria')
+    descricao = request.form.get('descricao')
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+
     foto = request.files.get('foto')
-    os.makedirs('static/uploads', exist_ok=True)
-    foto_caminho = f'static/uploads/{foto.filename}'
+
+    # cria pasta uploads
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    # salva foto
+    foto_caminho = f'{UPLOAD_FOLDER}/{foto.filename}'
     foto.save(foto_caminho)
 
-    protocolo = db(
-        "INSERT INTO denuncias (categoria, latitude, longitude, foto_caminho, descriacao) VALUES (?, ?, ?, ?, ?)",
-        (request.form.get('categoria'), request.form.get('latitude'), request.form.get('longitude'), foto_caminho, request.form.get('descriacao'))
-    )
+    conexao = conectar()
+    cursor = conexao.cursor()
 
-    return render_template('confirmacao.html',
+    cursor.execute("""
+        INSERT INTO denuncias
+        (categoria, descricao, latitude, longitude, foto_caminho, data)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        categoria,
+        descricao,
+        latitude,
+        longitude,
+        foto_caminho,
+        datetime.now()
+    ))
+
+    protocolo = cursor.lastrowid
+
+    conexao.commit()
+    conexao.close()
+
+    return render_template(
+        'confirmacao.html',
         protocolo=protocolo,
-        categoria=request.form.get('categoria'),
-        latitude=request.form.get('latitude'),
-        longitude=request.form.get('longitude'),
+        categoria=categoria,
+        descricao=descricao,
+        latitude=latitude,
+        longitude=longitude,
         data=datetime.now().strftime('%d/%m/%Y %H:%M')
     )
 
+
+# =========================
+# INICIAR SERVIDOR
+# =========================
 if __name__ == '__main__':
     app.run(debug=True)
