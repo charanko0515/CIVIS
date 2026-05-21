@@ -1,67 +1,29 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CIVIS - Entrar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+{% block breadcrumb %}Entrar{% endblock %}
 
-    <header class="bg-blue-700 text-white px-4 py-3 shadow-md flex items-center justify-between">
+{% block conteudo %}
+<div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 w-full max-w-sm">
+    <div class="flex items-center gap-2 mb-5">
+        <div class="bg-blue-100 text-blue-700 rounded-lg p-2 text-lg">🔑</div>
         <div>
-            <a href="/" class="text-xl font-bold hover:opacity-80 transition">CIVIS</a>
-            <p class="text-xs opacity-70">Painel de Ocorrências Urbanas</p>
+            <h2 class="text-base font-semibold text-gray-700">Entrar na sua conta</h2>
+            <p class="text-xs text-gray-400">Acesse para enviar denúncias</p>
         </div>
-        <div class="flex gap-2">
-            <a href="/login" class="text-sm border border-white text-white px-3 py-1.5 rounded hover:bg-white hover:text-blue-700 transition">Entrar</a>
-            <a href="/cadastro" class="text-sm bg-white text-blue-700 font-semibold px-3 py-1.5 rounded hover:bg-blue-50 transition">Criar conta</a>
-        </div>
-    </header>
-
-    <!-- Breadcrumb -->
-    <div class="bg-white border-b border-gray-200 px-4 py-2 text-xs text-gray-400 flex items-center gap-1">
-        <a href="/" class="hover:text-blue-600 transition">Início</a>
-        <span>›</span>
-        <span class="text-gray-600 font-medium">Entrar</span>
     </div>
-
-    <main class="p-4 max-w-md mx-auto w-full flex-grow flex flex-col justify-center">
-        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-
-            <div class="flex items-center gap-2 mb-5">
-                <div class="bg-blue-100 text-blue-700 rounded-lg p-2 text-lg">🔒</div>
-                <div>
-                    <h2 class="text-base font-semibold text-gray-700">Entrar na sua conta</h2>
-                    <p class="text-xs text-gray-400">Acesse para enviar denúncias</p>
-                </div>
-            </div>
-
-            <form action="/login" method="POST" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">E-mail</label>
-                    <input type="email" name="email" required placeholder="seu@email.com"
-                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Senha</label>
-                    <input type="password" name="senha" required placeholder="••••••••"
-                           class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-sm">
-                    Entrar
-                </button>
-            </form>
-
-            <p class="text-sm text-center text-gray-500 mt-4">
-                Não tem conta?
-                <a href="/cadastro" class="text-blue-600 font-semibold hover:underline">Criar conta</a>
-            </p>
+    <form action="/login" method="POST" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">E-mail</label>
+            <input type="email" name="email" required placeholder="seu@email.com"
+                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-    </main>
-
-    <footer class="text-center text-xs text-gray-400 py-4 border-t border-gray-200">
-        CIVIS · CETI Zacarias de Góis · Do Piauí para o Mundo 2026
-    </footer>
-</body>
-</html>
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Senha</label>
+            <input type="password" name="senha" required placeholder="••••••••"
+                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Entrar</button>
+    </form>
+    <p class="text-sm text-center text-gray-500 mt-4">Não tem conta? <a href="/cadastro" class="text-blue-600 font-semibold hover:underline">Criar conta</a></p>
+</div>
+{% endblock %}

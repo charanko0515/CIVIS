@@ -3,7 +3,7 @@ import sqlite3
 conexao = sqlite3.connect('database.db')
 cursor = conexao.cursor()
 
-# Cria a tabela "denuncias" (Esta já estava perfeita!)
+# Cria a tabela denuncias
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS denuncias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
 )
 ''')
 
-# Cria a tabela "usuario" (Corrigida aqui)
+# Cria a tabela usuario
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS usuario (
     id INTEGER,
