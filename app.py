@@ -24,7 +24,7 @@ def login():
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        db("INSERT INTO usuario (name, email, password) VALUES (?, ?, ?)",
+        db("INSERT INTO usuario (name,cpf, email, password) VALUES (?, ?, ?, ?)",
            (request.form.get('nome'), request.form.get('email'), request.form.get('senha')))
         return redirect('/login')
     return render_template('cadastro.html')
