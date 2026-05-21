@@ -28,10 +28,10 @@
                 <label class="block text-sm font-medium text-gray-600 mb-1">O que aconteceu?</label>
                 <select name="categoria" required class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
                     <option value="">Selecione uma opção...</option>
-                    <option value="Iluminação"> Iluminação Pública Defeituosa</option>
-                    <option value="Saneamento"> Esgoto ou Saneamento</option>
-                    <option value="Vias"> Buraco na Via / Asfalto</option>
-                    <option value="Lixo"> Acúmulo de Lixo Irregular</option>
+                    <option value="Iluminação">💡 Iluminação Pública Defeituosa</option>
+                    <option value="Saneamento">🚧 Esgoto ou Saneamento</option>
+                    <option value="Vias">🕳️ Buraco na Via / Asfalto</option>
+                    <option value="Lixo">🗑️ Acúmulo de Lixo Irregular</option>
                 </select>
             </div>
 
@@ -48,7 +48,7 @@
             </div>
 
             <div id="status-gps" class="text-xs font-medium text-center bg-amber-50 text-amber-600 p-2 rounded-lg border border-amber-200">
-                 Clique no mapa, busque um endereço ou use o GPS
+                📡 Clique no mapa, busque um endereço ou use o GPS
             </div>
 
             <div>
@@ -81,7 +81,7 @@
                     <span style="color:#fff;font-size:10px">▋▋▋ WiFi 🔋</span>
                 </div>
                 <div style="background:#1d3f8a;padding:6px 12px 8px;flex-shrink:0">
-                    <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:1px"> CIVIS</span>
+                    <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:1px">📍 CIVIS</span>
                 </div>
                 <div id="mapa" style="flex-grow:1"></div>
                 <div style="background:#fff;border-top:1px solid #eee;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0">
@@ -100,14 +100,12 @@
 
 {% block scripts %}
 <script>
-    const mapa = L.map('mapa', { zoomControl: false, attributionControl: false }).setView([-5.0892, -42.8019], 13);
+    const limitsBrasil = L.latLngBounds(L.latLng(-33.75, -73.99), L.latLng(5.27, -28.84));
+    const mapa = L.map('mapa', { zoomControl: false, attributionControl: false, maxBounds: limitsBrasil, maxBoundsViscosity: 1.0, minZoom: 4 }).setView([-5.0892, -42.8019], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
     [
-        { lat: -5.0800, lng: -42.8100, tipo: ' Iluminação', bairro: 'Centro' },
-        { lat: -5.0950, lng: -42.7950, tipo: ' Buraco na Via', bairro: 'Redenção' },
-        { lat: -5.0750, lng: -42.8200, tipo: ' Saneamento', bairro: 'São Cristóvão' },
-        { lat: -5.1000, lng: -42.8050, tipo: ' Lixo', bairro: 'São Pedro' },
+       
     ].forEach(o => L.marker([o.lat, o.lng]).addTo(mapa).bindPopup(`<b>${o.tipo}</b><br>${o.bairro}`));
 
     let marcador = null;
@@ -140,14 +138,14 @@
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(termo)}&limit=1&countrycodes=br`)
             .then(r => r.json())
             .then(d => {
-                if (!d.length) return setStatus(' Endereço não encontrado.', 'erro');
+                if (!d.length) return setStatus('❌ Endereço não encontrado.', 'erro');
                 const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
                 mapa.setView([lat, lng], 16);
                 moverMarcador(lat, lng, ` ${d[0].display_name.split(',').slice(0,2).join(',')}`);
                 document.getElementById('busca-endereco').value = d[0].display_name.split(',').slice(0,3).join(',');
                 setStatus(' Endereço encontrado!', 'ok');
             })
-            .catch(() => setStatus(' Erro na busca.', 'erro'));
+            .catch(() => setStatus('❌ Erro na busca.', 'erro'));
     }
 
     document.getElementById('busca-endereco').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); buscarEndereco(); } });
@@ -155,8 +153,8 @@
     function usarGPS() {
         setStatus('📡 Buscando GPS...', 'info');
         navigator.geolocation.getCurrentPosition(
-            p => { mapa.setView([p.coords.latitude, p.coords.longitude], 16); moverMarcador(p.coords.latitude, p.coords.longitude, ' Você está aqui'); setStatus(' Localização capturada!', 'ok'); },
-            () => setStatus(' GPS indisponível. Busque o endereço ou clique no mapa.', 'erro')
+            p => { mapa.setView([p.coords.latitude, p.coords.longitude], 16); moverMarcador(p.coords.latitude, p.coords.longitude, '📍 Você está aqui'); setStatus('📍 Localização capturada!', 'ok'); },
+            () => setStatus('❌ GPS indisponível. Busque o endereço ou clique no mapa.', 'erro')
         );
     }
 
