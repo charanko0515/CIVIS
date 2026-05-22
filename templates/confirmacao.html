@@ -4,34 +4,36 @@
 
 {% block conteudo %}
 <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 max-w-md w-full text-center">
-    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span class="text-3xl">✅</span>
-    </div>
-    <h2 class="text-xl font-bold text-gray-800 mb-1">Denúncia enviada!</h2>
-    <p class="text-sm text-gray-500 mb-6">Sua ocorrência foi registrada com sucesso.</p>
 
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <p class="text-xs text-blue-500 font-medium uppercase tracking-wide mb-1">Número do Protocolo</p>
-        <p class="text-2xl font-bold text-blue-700">#{{ protocolo }}</p>
+    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#dbeafe;">
+        <i class="fa-solid fa-check text-2xl" style="color:#0b438a;"></i>
+    </div>
+    <h2 class="text-xl font-extrabold mb-1" style="color:#0b438a;">Denúncia enviada!</h2>
+    <p class="text-sm text-gray-400 mb-6">Sua ocorrência foi registrada com sucesso.</p>
+
+    <div class="rounded-xl p-4 mb-6" style="background:#eff6ff;border:1.5px solid #bfdbfe;">
+        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:#0b438a;">Número do Protocolo</p>
+        <p class="text-3xl font-extrabold" style="color:#0b438a;">#{{ protocolo }}</p>
         <p class="text-xs text-gray-400 mt-1">Guarde este número para acompanhar sua denúncia</p>
     </div>
 
     <div class="text-left space-y-2 mb-6">
         <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-            <span class="text-gray-500">Categoria</span>
-            <span class="font-medium text-gray-700">{{ categoria }}</span>
+            <span class="text-gray-400">Categoria</span>
+            <span class="font-semibold" style="color:#1e2d5a;">{{ categoria }}</span>
         </div>
         <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-            <span class="text-gray-500">Localização</span>
-            <span class="font-medium text-gray-700">{{ "%.4f"|format(latitude|float) }}, {{ "%.4f"|format(longitude|float) }}</span>
+            <span class="text-gray-400">Localização</span>
+            <span class="font-semibold" style="color:#1e2d5a;">{{ "%.4f"|format(latitude|float) }}, {{ "%.4f"|format(longitude|float) }}</span>
         </div>
         <div class="flex justify-between text-sm">
-            <span class="text-gray-500">Data</span>
-            <span class="font-medium text-gray-700">{{ data }}</span>
+            <span class="text-gray-400">Data</span>
+            <span class="font-semibold" style="color:#1e2d5a;">{{ data }}</span>
         </div>
     </div>
 
-    <a href="/" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
+    <a href="/" style="background:#0b438a;"
+       class="block w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
         Registrar nova denúncia
     </a>
 </div>

@@ -13,7 +13,7 @@ UPLOAD_FOLDER = 'static/uploads'
 # FUNÇÃO DE CONEXÃO
 # =========================
 def conectar():
-    return sqlite3.connect('database.py')
+    return sqlite3.connect('database.db')
 
 
 # =========================
@@ -21,7 +21,12 @@ def conectar():
 # =========================
 @app.route('/')
 def home():
-    return render_template('homepage.html')
+    conexao = conectar()
+    cursor = conexao.cursor()
+    cursor.execute("SELECT categoria, latitude, longitude FROM denuncias")
+    ocorrencias = [{"categoria": r[0], "lat": r[1], "lng": r[2]} for r in cursor.fetchall()]
+    conexao.close()
+    return render_template('homepage.html', ocorrencias=ocorrencias)
 
 
 @app.route('/login')

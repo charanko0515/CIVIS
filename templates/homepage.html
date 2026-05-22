@@ -1,134 +1,240 @@
 {% extends "base.html" %}
-{% block titulo %}Enviar Denúncia{% endblock %}
+{% block titulo %}Início{% endblock %}
 {% block breadcrumb %}Nova Denúncia{% endblock %}
+{% block main_class %}block{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style> #mapa { height: 100%; width: 100%; } </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    #mapa { height: 100%; width: 100%; }
+    .input-field { width:100%; padding:10px 14px; border:1.5px solid #dde3f0; border-radius:10px; font-size:14px; color:#1e2d5a; outline:none; transition:border-color .2s; }
+    .input-field:focus { border-color:#0b438a; }
+    .input-field::placeholder { color:#a0aec0; }
+    select.input-field { appearance:none; background:#fff; cursor:pointer; }
+    textarea.input-field { resize:none; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes bounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(6px); } }
+    .fade-up { animation:fadeUp .6s ease both; }
+    .delay-1 { animation-delay:.1s; }
+    .delay-2 { animation-delay:.2s; }
+    .bounce { animation:bounce 1.5s infinite; }
+</style>
 {% endblock %}
 
 {% block conteudo %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full max-w-6xl">
 
-    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 max-w-md w-full">
-        <div class="flex items-center gap-2 mb-5">
-            <div class="bg-blue-100 text-blue-700 rounded-lg p-2 text-lg">📋</div>
-            <div>
-                <h2 class="text-xl font-bold text-blue-900">Dados da Denúncia</h2>
-                <p class="text-xs text-gray-400">Preencha para registrar uma ocorrência</p>
+<!-- Hero -->
+<div class="w-full max-w-6xl mx-auto px-6 py-10">
+    <div class="flex flex-col lg:flex-row items-center gap-10">
+
+        <!-- Formulário -->
+        <div class="w-full lg:w-1/2 fade-up flex justify-center">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 w-full max-w-md">
+
+                <h2 class="text-2xl font-extrabold mb-1" style="color:#0b438a">Dados da Denúncia</h2>
+                <p class="text-xs text-gray-400 mb-6">Preencha para registrar uma ocorrência</p>
+
+                <form action="/receber_denuncia" method="POST" enctype="multipart/form-data" class="space-y-5">
+                    <input type="hidden" id="lat" name="latitude">
+                    <input type="hidden" id="lng" name="longitude">
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a">Categoria</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-list absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <select name="categoria" required class="input-field pl-9">
+                                <option value="">Selecione uma categoria</option>
+                                <option value="Iluminação">💡 Iluminação Pública</option>
+                                <option value="Saneamento">🚧 Esgoto / Saneamento</option>
+                                <option value="Vias">🕳️ Buraco na Via</option>
+                                <option value="Lixo">🗑️ Acúmulo de Lixo</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a">Local da ocorrência</label>
+                        <div style="position:relative;">
+                            <input type="text" id="busca-endereco" class="input-field" placeholder="ex: Rua das Flores, Teresina…"
+                                   style="padding-right:38px;">
+                            <button type="button" onclick="buscarEndereco()"
+                                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#a0aec0;font-size:1rem;padding:0;transition:color .2s;"
+                                onmouseover="this.style.color='#0b438a'" onmouseout="this.style.color='#a0aec0'">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </div>
+                        <button type="button" onclick="usarGPS()"
+                            style="border:1.5px solid #0b438a; color:#0b438a;"
+                            class="mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold hover:bg-blue-50 transition">
+                            <i class="fa-solid fa-location-crosshairs"></i> Usar minha localização
+                        </button>
+                    </div>
+
+                    <div id="status-gps" class="text-xs font-medium text-center bg-amber-50 text-amber-600 p-2 rounded-xl border border-amber-200">
+                        📡 Clique no mapa, busque um endereço ou use o GPS
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-sm font-semibold" style="color:#1e2d5a">Descrição</label>
+                            <label class="flex items-center gap-1 text-xs font-medium cursor-pointer" style="color:#0b438a">
+                                <i class="fa-solid fa-camera"></i> Adicionar imagem (opcional)
+                                <input type="file" name="foto" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                        <textarea name="descriacao" rows="4" class="input-field" placeholder="Descreva os detalhes da ocorrência..."></textarea>
+                    </div>
+
+                    <button type="submit"
+                        style="background:#0b438a;"
+                        class="w-full text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition">
+                        <i class="fa-solid fa-paper-plane"></i> Enviar denúncia
+                    </button>
+                </form>
             </div>
         </div>
 
-        <form action="/receber_denuncia" method="POST" enctype="multipart/form-data" class="space-y-4">
-            <input type="hidden" id="lat" name="latitude">
-            <input type="hidden" id="lng" name="longitude">
-
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">O que aconteceu?</label>
-                <select name="categoria" required class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
-                    <option value="">Selecione uma opção...</option>
-                    <option value="Iluminação">💡 Iluminação Pública Defeituosa</option>
-                    <option value="Saneamento">🚧 Esgoto ou Saneamento</option>
-                    <option value="Vias">🕳️ Buraco na Via / Asfalto</option>
-                    <option value="Lixo">🗑️ Acúmulo de Lixo Irregular</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">Local da ocorrência</label>
-                <div class="flex gap-2">
-                    <input type="text" id="busca-endereco" placeholder="Digite o endereço..."
-                           class="flex-grow p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                    <button type="button" onclick="buscarEndereco()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">🔍</button>
+        <!-- Mockup celular -->
+        <div class="w-full lg:w-1/2 hidden lg:flex justify-center fade-up delay-1">
+            <div style="position:relative;width:290px;height:580px;background:linear-gradient(160deg,#2a2a3d,#1a1a2e);border-radius:46px;padding:14px;box-shadow:0 0 0 2px #3a3a5c,0 40px 80px rgba(0,0,0,.5);">
+                <div style="position:absolute;left:-3px;top:105px;width:3px;height:34px;background:#3a3a5c;border-radius:2px 0 0 2px"></div>
+                <div style="position:absolute;left:-3px;top:148px;width:3px;height:34px;background:#3a3a5c;border-radius:2px 0 0 2px"></div>
+                <div style="position:absolute;right:-3px;top:125px;width:3px;height:54px;background:#3a3a5c;border-radius:0 2px 2px 0"></div>
+                <div style="width:100%;height:100%;background:#f0f4ff;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;">
+                    <div style="background:#0b438a;padding:9px 18px 7px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+                        <span id="relogio" style="color:#fff;font-size:12px;font-weight:700;">00:00</span>
+                        <div style="display:flex;align-items:center;gap:5px;">
+                            <i class="fa-solid fa-signal" style="color:#fff;font-size:10px;"></i>
+                            <i class="fa-solid fa-wifi" style="color:#fff;font-size:10px;"></i>
+                            <i class="fa-solid fa-battery-full" style="color:#fff;font-size:10px;"></i>
+                        </div>
+                    </div>
+                    <div style="background:#0b438a;padding:7px 14px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                        <i class="fa-solid fa-location-dot" style="color:#fff;font-size:14px;"></i>
+                        <span style="color:#fff;font-size:14px;font-weight:800;letter-spacing:1.5px;">CIVIS</span>
+                    </div>
+                    <div style="background:#fff;padding:8px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #e8eef8;flex-shrink:0;">
+                        <i class="fa-solid fa-bars" style="color:#0b438a;font-size:12px;"></i>
+                        <span style="flex-grow:1;font-size:11px;color:#a0aec0;">Buscar local</span>
+                        <i class="fa-solid fa-magnifying-glass" style="color:#0b438a;font-size:12px;"></i>
+                    </div>
+                    <div id="mapa" style="flex-grow:1;"></div>
                 </div>
-                <button type="button" onclick="usarGPS()" class="mt-2 w-full border border-blue-500 text-blue-600 hover:bg-blue-50 py-2 rounded-lg text-sm font-semibold transition">
-                     Usar minha localização
-                </button>
             </div>
+        </div>
 
-            <div id="status-gps" class="text-xs font-medium text-center bg-amber-50 text-amber-600 p-2 rounded-lg border border-amber-200">
-                📡 Clique no mapa, busque um endereço ou use o GPS
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">Descrição</label>
-                <textarea name="descriacao" required placeholder="Descreva os detalhes da ocorrência..." rows="3"
-                          class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"></textarea>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">Foto do Problema</label>
-                <input type="file" name="foto" accept="image/*" capture="environment" required
-                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-            </div>
-
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition flex justify-center items-center gap-2">
-                 Enviar denúncia
-            </button>
-        </form>
     </div>
 
-    <!-- Mockup celular -->
-    <div class="hidden md:flex justify-center items-center">
-        <div style="position:relative;width:280px;height:560px;background:#1a1a2e;border-radius:44px;padding:14px;box-shadow:0 0 0 2px #333,0 30px 80px rgba(0,0,0,0.45)">
-            <div style="position:absolute;left:-3px;top:100px;width:3px;height:32px;background:#333;border-radius:2px 0 0 2px"></div>
-            <div style="position:absolute;left:-3px;top:142px;width:3px;height:32px;background:#333;border-radius:2px 0 0 2px"></div>
-            <div style="position:absolute;right:-3px;top:120px;width:3px;height:52px;background:#333;border-radius:0 2px 2px 0"></div>
-            <div style="width:100%;height:100%;background:#fff;border-radius:32px;overflow:hidden;display:flex;flex-direction:column">
-                <div style="background:#1d3f8a;padding:8px 16px;display:flex;justify-content:space-between;flex-shrink:0">
-                    <span style="color:#fff;font-size:11px;font-weight:600">09:41</span>
-                    <span style="color:#fff;font-size:10px">▋▋▋ WiFi 🔋</span>
-                </div>
-                <div style="background:#1d3f8a;padding:6px 12px 8px;flex-shrink:0">
-                    <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:1px">📍 CIVIS</span>
-                </div>
-                <div id="mapa" style="flex-grow:1"></div>
-                <div style="background:#fff;border-top:1px solid #eee;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0">
-                    <div style="width:32px;height:32px;background:#e0edff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">💡</div>
-                    <div style="flex-grow:1;min-width:0">
-                        <p style="font-size:11px;font-weight:700;color:#1d3f8a;margin:0">Iluminação pública</p>
-                        <p style="font-size:10px;color:#888;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Rua das Flores, 123 - Centro</p>
-                    </div>
-                    <span style="font-size:10px;color:#22c55e;font-weight:600">Aberta ›</span>
-                </div>
-            </div>
+    <!-- Indicador scroll -->
+    <div class="flex flex-col items-center gap-2 mt-12 fade-up delay-2">
+        <p class="text-sm font-medium" style="color:#0b438a;">Tem mais conteúdo abaixo</p>
+        <div class="bounce w-8 h-8 rounded-full flex items-center justify-center" style="background:#0b438a;">
+            <i class="fa-solid fa-arrow-down text-white text-xs"></i>
         </div>
     </div>
 </div>
+
+<!-- Curva de entrada na seção azul -->
+<div style="overflow:hidden;line-height:0;">
+    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:80px;">
+        <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#0b438a"/>
+    </svg>
+</div>
+
+<!-- Seção informações -->
+<section style="background:#0b438a;" class="py-16 px-6">
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-center text-white text-2xl font-extrabold mb-2">Como o CIVIS funciona?</h2>
+        <p class="text-center text-sm mb-12" style="color:#7ab3e0;">Simples, rápido e direto para quem precisa resolver</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div class="bg-white bg-opacity-10 rounded-2xl p-6 text-center border border-white border-opacity-20">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#1d5faa;">
+                    <i class="fa-solid fa-camera text-white text-xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-base mb-2">1. Registre</h3>
+                <p class="text-sm" style="color:#a8cce8;">Tire uma foto do problema e preencha as informações básicas da ocorrência.</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-2xl p-6 text-center border border-white border-opacity-20">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#1d5faa;">
+                    <i class="fa-solid fa-location-dot text-white text-xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-base mb-2">2. Geolocalização</h3>
+                <p class="text-sm" style="color:#a8cce8;">O sistema captura o local exato pelo GPS ou pelo mapa interativo.</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-2xl p-6 text-center border border-white border-opacity-20">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#1d5faa;">
+                    <i class="fa-solid fa-paper-plane text-white text-xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-base mb-2">3. Envie</h3>
+                <p class="text-sm" style="color:#a8cce8;">Sua denúncia vira um protocolo oficial e chega diretamente ao poder público.</p>
+            </div>
+        </div>
+
+        <div class="border-t border-white border-opacity-20 mb-12"></div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+                <p class="text-3xl font-extrabold text-white">14</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Bairros atendidos</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-white">2.4k</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Ocorrências registradas</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-white">87%</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Taxa de resolução</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-white">48h</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Tempo médio de resposta</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Curva de saída -->
+<div style="overflow:hidden;line-height:0;">
+    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:80px;">
+        <path d="M0,40 C360,0 1080,80 1440,40 L1440,0 L0,0 Z" fill="#0b438a"/>
+    </svg>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-    const limitsBrasil = L.latLngBounds(L.latLng(-33.75, -73.99), L.latLng(5.27, -28.84));
-    const mapa = L.map('mapa', { zoomControl: false, attributionControl: false, maxBounds: limitsBrasil, maxBoundsViscosity: 1.0, minZoom: 4 }).setView([-5.0892, -42.8019], 13);
+    const limitsBrasil = L.latLngBounds(L.latLng(-33.75,-73.99), L.latLng(5.27,-28.84));
+    const mapa = L.map('mapa', { zoomControl:false, attributionControl:false, maxBounds:limitsBrasil, maxBoundsViscosity:1.0, minZoom:4 }).setView([-5.0892,-42.8019], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-    [
-       
-    ].forEach(o => L.marker([o.lat, o.lng]).addTo(mapa).bindPopup(`<b>${o.tipo}</b><br>${o.bairro}`));
+    const ocorrencias = JSON.parse('{{ ocorrencias | tojson | safe }}');
+    ocorrencias.forEach(o => L.marker([o.lat, o.lng]).addTo(mapa).bindPopup(`<b>${o.categoria}</b>`));
 
     let marcador = null;
 
     function setStatus(msg, tipo) {
-        const cores = { ok: 'bg-green-50 text-green-600 border-green-200', erro: 'bg-red-50 text-red-600 border-red-200', info: 'bg-blue-50 text-blue-600 border-blue-200' };
+        const cores = { ok:'bg-green-50 text-green-600 border-green-200', erro:'bg-red-50 text-red-600 border-red-200', info:'bg-blue-50 text-blue-600 border-blue-200' };
         const s = document.getElementById('status-gps');
         s.innerText = msg;
-        s.className = `text-xs font-medium text-center p-2 rounded-lg border ${cores[tipo]}`;
+        s.className = `text-xs font-medium text-center p-2 rounded-xl border ${cores[tipo]}`;
     }
 
     function moverMarcador(lat, lng, label) {
         document.getElementById('lat').value = lat.toFixed(6);
         document.getElementById('lng').value = lng.toFixed(6);
-        marcador ? marcador.setLatLng([lat, lng]).bindPopup(label).openPopup()
-                 : (marcador = L.marker([lat, lng]).addTo(mapa).bindPopup(label).openPopup());
+        marcador ? marcador.setLatLng([lat,lng]).bindPopup(label).openPopup()
+                 : (marcador = L.marker([lat,lng]).addTo(mapa).bindPopup(label).openPopup());
     }
 
     mapa.on('click', e => {
         moverMarcador(e.latlng.lat, e.latlng.lng, ' Local selecionado');
         mapa.setView(e.latlng);
         document.getElementById('busca-endereco').value = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-        setStatus(`📍 Local: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`, 'ok');
+        setStatus(` Local: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`, 'ok');
     });
 
     function buscarEndereco() {
@@ -140,7 +246,7 @@
             .then(d => {
                 if (!d.length) return setStatus('❌ Endereço não encontrado.', 'erro');
                 const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
-                mapa.setView([lat, lng], 16);
+                mapa.setView([lat,lng], 16);
                 moverMarcador(lat, lng, ` ${d[0].display_name.split(',').slice(0,2).join(',')}`);
                 document.getElementById('busca-endereco').value = d[0].display_name.split(',').slice(0,3).join(',');
                 setStatus(' Endereço encontrado!', 'ok');
@@ -148,18 +254,27 @@
             .catch(() => setStatus('❌ Erro na busca.', 'erro'));
     }
 
-    document.getElementById('busca-endereco').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); buscarEndereco(); } });
+    document.getElementById('busca-endereco').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); buscarEndereco(); }
+    });
 
     function usarGPS() {
         setStatus('📡 Buscando GPS...', 'info');
         navigator.geolocation.getCurrentPosition(
-            p => { mapa.setView([p.coords.latitude, p.coords.longitude], 16); moverMarcador(p.coords.latitude, p.coords.longitude, '📍 Você está aqui'); setStatus('📍 Localização capturada!', 'ok'); },
-            () => setStatus('❌ GPS indisponível. Busque o endereço ou clique no mapa.', 'erro')
+            p => { mapa.setView([p.coords.latitude,p.coords.longitude],16); moverMarcador(p.coords.latitude,p.coords.longitude,'📍 Você está aqui'); setStatus('📍 Localização capturada!','ok'); },
+            () => setStatus('❌ GPS indisponível. Busque o endereço ou clique no mapa.','erro')
         );
     }
 
     document.querySelector('form').addEventListener('submit', e => {
-        if (!document.getElementById('lat').value) { e.preventDefault(); setStatus(' Selecione um local no mapa antes de enviar.', 'erro'); }
+        if (!document.getElementById('lat').value) { e.preventDefault(); setStatus('⚠️ Selecione um local no mapa antes de enviar.','erro'); }
     });
+
+    function atualizarRelogio() {
+        const a = new Date();
+        document.getElementById('relogio').innerText = String(a.getHours()).padStart(2,'0') + ':' + String(a.getMinutes()).padStart(2,'0');
+    }
+    atualizarRelogio();
+    setInterval(atualizarRelogio, 1000);
 </script>
 {% endblock %}

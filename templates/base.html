@@ -5,28 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CIVIS - {% block titulo %}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style> * { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
     {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" style="background:#f0f4ff;">
 
-    <header class="bg-blue-700 text-white px-4 py-3 shadow-md flex items-center justify-between">
-        <div>
-            <a href="/" class="text-xl font-bold hover:opacity-80 transition">CIVIS</a>
-            <p class="text-xs opacity-70">Controle Inteligente de Vigilância e Impacto Social</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="/login" class="text-sm border border-white text-white px-3 py-1.5 rounded hover:bg-white hover:text-blue-700 transition">Entrar</a>
-            <a href="/cadastro" class="text-sm bg-white text-blue-700 font-semibold px-3 py-1.5 rounded hover:bg-blue-50 transition">Criar conta</a>
+    <header style="background:#0b438a;" class="px-6 py-3 shadow-md flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 hover:opacity-80 transition">
+            <i class="fa-solid fa-location-dot text-white text-xl"></i>
+            <div class="flex flex-col">
+                <span class="text-white text-xl font-extrabold tracking-wide leading-tight">civis</span>
+                <span style="color:#7ab3e0;font-size:9px;letter-spacing:0.05em;font-weight:500;">Controle Inteligente de Vigilância e Impacto Social</span>
+            </div>
+        </a>
+        <div class="flex items-center gap-3">
+            <a href="/login" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">login</a>
+            <a href="/cadastro" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">cadastro</a>
+            <div class="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center hover:bg-white hover:text-blue-900 transition cursor-pointer">
+                <i class="fa-regular fa-user text-white text-sm"></i>
+            </div>
         </div>
     </header>
 
-    <div class="bg-white border-b border-gray-200 px-4 py-2 text-xs text-gray-400 flex items-center gap-1">
+    <div class="bg-white border-b border-gray-200 px-6 py-2 text-xs text-gray-400 flex items-center gap-1">
         <a href="/" class="hover:text-blue-600 transition">Início</a>
         <span>›</span>
         <span class="text-gray-600 font-medium">{% block breadcrumb %}{% endblock %}</span>
     </div>
 
-    <main class="flex-grow flex items-center justify-center p-4 md:p-8">
+    <main class="flex-grow {% block main_class %}flex items-center justify-center p-6 md:p-10{% endblock %}">
         {% block conteudo %}{% endblock %}
     </main>
 

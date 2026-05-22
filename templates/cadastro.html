@@ -3,42 +3,53 @@
 {% block breadcrumb %}Criar conta{% endblock %}
 
 {% block conteudo %}
-<div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 w-full max-w-sm">
-    <div class="flex items-center gap-2 mb-5">
-        <div class="bg-blue-100 text-blue-700 rounded-lg p-2 text-lg">👤</div>
+<div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 w-full max-w-sm">
+    <div class="flex items-center gap-2 mb-6">
+        <div class="rounded-lg p-2 text-lg" style="background:#dbeafe;color:#0b438a;">👤</div>
         <div>
-            <h2 class="text-base font-semibold text-gray-700">Criar nova conta</h2>
+            <h2 class="text-base font-bold" style="color:#0b438a;">Criar nova conta</h2>
             <p class="text-xs text-gray-400">Junte-se à fiscalização comunitária</p>
         </div>
     </div>
     <form action="/cadastro" method="POST" class="space-y-4">
         <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Nome completo</label>
+            <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a;">Nome completo</label>
             <input type="text" name="nome" required placeholder="Seu nome"
-                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2">
         </div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">CPF</label>
-            <input type="CPF" name="cpf" required placeholder="000.000.000-00"
-                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">E-mail</label>
+            <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a;">CPF</label>
+            <input type="text" name="cpf" required placeholder="000.000.000-00"
+                   class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2">
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a;">E-mail</label>
             <input type="email" name="email" required placeholder="seu@email.com"
-                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2">
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Senha</label>
+            <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a;">Senha</label>
             <input type="password" name="senha" required placeholder="••••••••" id="senha"
-                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2">
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Confirmar senha</label>
+            <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a;">Confirmar senha</label>
             <input type="password" name="confirmar_senha" required placeholder="••••••••" id="confirmar"
-                   class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2">
         </div>
-        <p id="erro-senha" class="text-xs text-red-500 bg-red-50 border border-red-200 p-2 rounded-lg hidden">⚠️ As senhas não coincidem.</p>
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Criar conta</button>
+        <p id="erro-senha" class="text-xs p-2 rounded-xl border hidden" style="color:#dc2626;background:#fef2f2;border-color:#fecaca;">
+            ⚠️ As senhas não coincidem.
+        </p>
+        <button type="submit"
+            style="background:#0b438a;"
+            class="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+            Criar conta
+        </button>
     </form>
-    <p class="text-sm text-center text-gray-500 mt-4">Já tem conta? <a href="/login" class="text-blue-600 font-semibold hover:underline">Entrar</a></p>
+    <p class="text-sm text-center text-gray-400 mt-4">
+        Já tem conta?
+        <a href="/login" class="font-semibold hover:underline" style="color:#0b438a;">Entrar</a>
+    </p>
 </div>
 {% endblock %}
 
