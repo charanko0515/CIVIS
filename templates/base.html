@@ -22,11 +22,19 @@
             </div>
         </a>
         <div class="flex items-center gap-3">
-            <a href="/login" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">login</a>
-            <a href="/cadastro" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">cadastro</a>
-            <div class="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center hover:bg-white hover:text-blue-900 transition cursor-pointer">
-                <i class="fa-regular fa-user text-white text-sm"></i>
-            </div>
+            {% if nome_usuario %}
+                <span class="text-white text-sm font-semibold opacity-90">{{ nome_usuario }}</span>
+                <div class="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center" style="background:#1d5faa;">
+                    <i class="fa-solid fa-user text-white text-sm"></i>
+                </div>
+                <a href="/logout" class="text-sm font-semibold text-white px-4 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">sair</a>
+            {% else %}
+                <a href="/login" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">login</a>
+                <a href="/cadastro" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">cadastro</a>
+                <div class="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center cursor-pointer">
+                    <i class="fa-regular fa-user text-white text-sm"></i>
+                </div>
+            {% endif %}
         </div>
     </header>
 

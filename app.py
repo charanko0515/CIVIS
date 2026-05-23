@@ -1,9 +1,15 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, session as sessao
 import sqlite3
 import os
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = "civis_chave_secreta"
+
+# Disponibiliza nome_usuario em todos os templates automaticamente
+@app.context_processor
+def injetar_usuario():
+    return {"nome_usuario": sessao.get("nome_usuario")}
 
 
 UPLOAD_FOLDER = 'static/uploads'
@@ -89,8 +95,8 @@ def fazer_login():
     usuario = cursor.fetchone()
 
     conexao.close()
-    print('VC ESTAR LOGADO')#TESTA PARA SABER SE ESTA FUNCIONANDO
     if usuario:
+        sessao["nome_usuario"] = usuario[2]  # índice 2 = coluna nome
         return redirect('/')
 
     return 'CPF ou senha inválidos'
@@ -146,6 +152,15 @@ def receber_denuncia():
         longitude=longitude,
         data=datetime.now().strftime('%d/%m/%Y %H:%M')
     )
+
+
+# =========================
+# LOGOUT
+# =========================
+@app.route('/logout')
+def logout():
+    sessao.clear()
+    return redirect('/')
 
 
 # =========================
