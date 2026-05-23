@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
     longitude REAL NOT NULL,
     foto_caminho TEXT NOT NULL,
     data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    descriacao TEXT NOT NULL
+    descricao TEXT NOT NULL 
 )
 ''')
 
@@ -21,9 +21,9 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS usuario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     cpf TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
+    nome TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL, 
-    password TEXT NOT NULL,
+    senha TEXT NOT NULL,
     data_criacão DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ''')

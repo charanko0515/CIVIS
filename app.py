@@ -51,7 +51,7 @@ def denuncia():
 def cadastrar_usuario():
 
     cpf = request.form.get('cpf')
-    nome = request.form.get('name')
+    nome = request.form.get('nome')
     email = request.form.get('email')
     senha = request.form.get('senha')
 
@@ -59,7 +59,7 @@ def cadastrar_usuario():
     cursor = conexao.cursor()
 
     cursor.execute("""
-        INSERT INTO usuario (cpf, name, email, password)
+        INSERT INTO usuario (cpf, nome, email, senha)
         VALUES (?, ?, ?, ?)
     """, (cpf, nome, email, senha))
 
@@ -83,13 +83,13 @@ def fazer_login():
 
     cursor.execute("""
         SELECT * FROM usuario
-        WHERE cpf = ? AND password = ?
+        WHERE cpf = ? AND senha = ?
     """, (cpf, senha))
 
     usuario = cursor.fetchone()
 
     conexao.close()
-
+    print('VC ESTAR LOGADO')#TESTA PARA SABER SE ESTA FUNCIONANDO
     if usuario:
         return redirect('/')
 
@@ -121,15 +121,15 @@ def receber_denuncia():
 
     cursor.execute("""
         INSERT INTO denuncias
-        (categoria, descricao, latitude, longitude, foto_caminho, data)
-        VALUES (?, ?, ?, ?, ?, ?)
+        (categoria, descricao, latitude, longitude, foto_caminho)
+        VALUES (?, ?, ?, ?, ?)
     """, (
         categoria,
         descricao,
         latitude,
         longitude,
-        foto_caminho,
-        datetime.now()
+        foto_caminho
+        
     ))
 
     protocolo = cursor.lastrowid
