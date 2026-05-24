@@ -8,11 +8,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style> * { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            position: fixed;
+            top: 0; right: 0;
+            width: 270px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar.aberto { transform: translateX(0); }
+
+        /* ── Overlay ── */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 999;
+        }
+        #overlay.visivel { opacity: 1; pointer-events: all; }
+    </style>
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen flex flex-col" style="background:#f0f4ff;">
 
+    <!-- Header -->
     <header style="background:#0b438a;" class="px-6 py-3 shadow-md flex items-center justify-between">
         <a href="/" class="flex items-center gap-2 hover:opacity-80 transition">
             <i class="fa-solid fa-location-dot text-white text-xl"></i>
@@ -21,28 +52,85 @@
                 <span style="color:#7ab3e0;font-size:9px;letter-spacing:0.05em;font-weight:500;">Controle Inteligente de Vigilância e Impacto Social</span>
             </div>
         </a>
-        <div class="flex items-center gap-3">
-            {% if nome_usuario %}
-                <span class="text-white text-sm font-semibold opacity-90">{{ nome_usuario }}</span>
-                <div class="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center" style="background:#1d5faa;">
-                    <i class="fa-solid fa-user text-white text-sm"></i>
-                </div>
-                <a href="/logout" class="text-sm font-semibold text-white px-4 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">sair</a>
-            {% else %}
-                <a href="/login" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">login</a>
-                <a href="/cadastro" class="text-sm font-semibold text-white px-5 py-1.5 rounded-full border-2 border-white hover:bg-white hover:text-blue-900 transition">cadastro</a>
-                <div class="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center cursor-pointer">
-                    <i class="fa-regular fa-user text-white text-sm"></i>
-                </div>
-            {% endif %}
-        </div>
+
+        <!-- Botão hambúrguer (todas as telas) -->
+        <button id="btn-hamburger" class="text-white text-xl focus:outline-none" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
     </header>
 
+    <!-- Breadcrumb -->
     <div class="bg-white border-b border-gray-200 px-6 py-2 text-xs text-gray-400 flex items-center gap-1">
         <a href="/" class="hover:text-blue-600 transition">Início</a>
         <span>›</span>
         <span class="text-gray-600 font-medium">{% block breadcrumb %}{% endblock %}</span>
     </div>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <!-- Topo da sidebar -->
+        <div class="flex items-center justify-between px-5 py-4" style="background:#0b438a;">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-white"></i>
+                <span class="text-white font-extrabold tracking-wide">civis</span>
+            </div>
+            <button id="btn-fechar" class="text-white text-lg focus:outline-none" aria-label="Fechar menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Links -->
+        <div class="flex flex-col px-4 py-6 gap-1 flex-grow">
+            {% if nome_usuario %}
+                <!-- Info do usuário -->
+                <div class="flex items-center gap-3 mb-4 p-3 rounded-xl" style="background:#eff6ff;">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:#0b438a;">
+                        {{ nome_usuario[0].upper() }}
+                    </div>
+                    <span class="text-sm font-semibold" style="color:#0b438a;">{{ nome_usuario }}</span>
+                </div>
+                <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition" style="">
+                    <i class="fa-solid fa-house w-4" style="color:#0b438a;"></i> Home
+                </a>
+                <a href="/feed" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-newspaper w-4" style="color:#0b438a;"></i> Feed
+                </a>
+                <a href="/denuncia" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-paper-plane w-4" style="color:#0b438a;"></i> Nova denúncia
+                </a>
+                <a href="/perfil" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-user w-4" style="color:#0b438a;"></i> Meu perfil
+                </a>
+                <div class="border-t border-gray-100 my-3"></div>
+                <a href="/logout" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition">
+                    <i class="fa-solid fa-right-from-bracket w-4"></i> Sair
+                </a>
+            {% else %}
+                <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-house w-4" style="color:#0b438a;"></i> Home
+                </a>
+                <a href="/denuncia" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-paper-plane w-4" style="color:#0b438a;"></i> Denúncia anônima
+                </a>
+                <div class="border-t border-gray-100 my-3"></div>
+                <a href="/login" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-right-to-bracket w-4" style="color:#0b438a;"></i> Login
+                </a>
+                <a href="/cadastro" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-user-plus w-4" style="color:#0b438a;"></i> Criar conta
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Rodapé da sidebar -->
+        <div class="px-5 py-4 border-t border-gray-100">
+            <p class="text-xs text-gray-400">CIVIS · CETI Zacarias de Góis</p>
+            <p class="text-xs text-gray-400">Do Piauí para o Mundo 2026</p>
+        </div>
+    </nav>
 
     <main class="flex-grow {% block main_class %}flex items-center justify-center p-6 md:p-10{% endblock %}">
         {% block conteudo %}{% endblock %}
@@ -53,5 +141,20 @@
     </footer>
 
     {% block scripts %}{% endblock %}
+
+    <!-- JS do menu hambúrguer -->
+    <script>
+        const sidebar   = document.getElementById('sidebar');
+        const overlay   = document.getElementById('overlay');
+        const btnAbrir  = document.getElementById('btn-hamburger');
+        const btnFechar = document.getElementById('btn-fechar');
+
+        function abrirMenu()  { sidebar.classList.add('aberto');   overlay.classList.add('visivel'); }
+        function fecharMenu() { sidebar.classList.remove('aberto'); overlay.classList.remove('visivel'); }
+
+        btnAbrir.addEventListener('click', abrirMenu);
+        btnFechar.addEventListener('click', fecharMenu);
+        overlay.addEventListener('click', fecharMenu);
+    </script>
 </body>
 </html>

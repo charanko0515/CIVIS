@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block titulo %}Início{% endblock %}
+{% block breadcrumb %}Início{% endblock %}
+{% block main_class %}block{% endblock %}
+
+{% block conteudo %}
+
+<!-- Hero -->
+<section class="w-full max-w-5xl mx-auto px-6 py-16 flex flex-col items-center text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6" style="background:#dbeafe;color:#0b438a;">
+        <i class="fa-solid fa-location-dot"></i> Do Piauí para o Mundo 2026
+    </div>
+    <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight" style="color:#0b438a;">
+        Sua voz transforma<br>a cidade
+    </h1>
+    <p class="text-gray-500 text-base max-w-xl mb-8">
+        O CIVIS conecta cidadãos e gestores públicos. Registre ocorrências urbanas com foto e geolocalização e acompanhe a resolução em tempo real.
+    </p>
+    <div class="flex flex-wrap gap-3 justify-center">
+        <a href="/denuncia" style="background:#0b438a;"
+           class="flex items-center gap-2 text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition">
+            <i class="fa-solid fa-paper-plane"></i> Fazer denúncia anônima
+        </a>
+        <a href="/cadastro"
+           class="flex items-center gap-2 font-bold px-6 py-3 rounded-xl hover:opacity-90 transition"
+           style="border:2px solid #0b438a;color:#0b438a;background:#fff;">
+            <i class="fa-solid fa-user-plus"></i> Criar conta
+        </a>
+    </div>
+</section>
+
+<!-- Como funciona -->
+<div style="overflow:hidden;line-height:0;">
+    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:80px;">
+        <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#0b438a"/>
+    </svg>
+</div>
+
+<section style="background:#0b438a;" class="py-16 px-6">
+    <div class="max-w-5xl mx-auto">
+
+        <h2 class="text-center text-white text-2xl font-extrabold mb-2">Como o CIVIS funciona?</h2>
+        <p class="text-center text-sm mb-12" style="color:#7ab3e0;">Simples, rápido e direto para quem precisa resolver</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div class="bg-white bg-opacity-10 rounded-2xl p-6 text-center border border-white border-opacity-20">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#1d5faa;">
+                    <i class="fa-solid fa-camera text-white text-xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-base mb-2">1. Registre</h3>
+                <p class="text-sm" style="color:#a8cce8;">Tire uma foto do problema e preencha as informações básicas da ocorrência.</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-2xl p-6 text-center border border-white border-opacity-20">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#1d5faa;">
+                    <i class="fa-solid fa-location-dot text-white text-xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-base mb-2">2. Geolocalização</h3>
+                <p class="text-sm" style="color:#a8cce8;">O sistema captura o local exato pelo GPS ou pelo mapa interativo.</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-2xl p-6 text-center border border-white border-opacity-20">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#1d5faa;">
+                    <i class="fa-solid fa-paper-plane text-white text-xl"></i>
+                </div>
+                <h3 class="text-white font-bold text-base mb-2">3. Envie</h3>
+                <p class="text-sm" style="color:#a8cce8;">Sua denúncia vira um protocolo oficial e chega diretamente ao poder público.</p>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="border-t border-white border-opacity-20 mb-12"></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+                <p class="text-3xl font-extrabold text-white">14</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Bairros atendidos</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-white">2.4k</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Ocorrências registradas</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-white">87%</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Taxa de resolução</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-white">48h</p>
+                <p class="text-xs mt-1" style="color:#7ab3e0;">Tempo médio de resposta</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div style="overflow:hidden;line-height:0;">
+    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:80px;">
+        <path d="M0,40 C360,0 1080,80 1440,40 L1440,0 L0,0 Z" fill="#0b438a"/>
+    </svg>
+</div>
+
+<!-- Sobre o projeto -->
+<section class="w-full max-w-5xl mx-auto px-6 py-16">
+    <h2 class="text-2xl font-extrabold mb-2 text-center" style="color:#0b438a;">Sobre o CIVIS</h2>
+    <p class="text-center text-sm text-gray-400 mb-10">Contexto e oportunidade</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#dbeafe;">
+                    <i class="fa-solid fa-users" style="color:#0b438a;"></i>
+                </div>
+                <h3 class="font-bold text-sm" style="color:#0b438a;">Público-alvo</h3>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">Moradores de bairros periféricos urbanos, entre 18 e 60 anos, com acesso básico à internet via smartphone — diretamente afetados pela precariedade de serviços como saneamento, iluminação e manutenção de vias.</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#dbeafe;">
+                    <i class="fa-solid fa-bullseye" style="color:#0b438a;"></i>
+                </div>
+                <h3 class="font-bold text-sm" style="color:#0b438a;">Objetivo principal</h3>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">Criar uma plataforma de mediação que centralize e mapeie ocorrências urbanas, transformando denúncias individuais em dados estratégicos para a gestão pública.</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#dbeafe;">
+                    <i class="fa-solid fa-lightbulb" style="color:#0b438a;"></i>
+                </div>
+                <h3 class="font-bold text-sm" style="color:#0b438a;">Diferencial</h3>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">Diferente das ouvidorias comuns, o foco está na geolocalização e na contagem de impacto. A inovação está no ranking de prioridades baseado no clamor social, não apenas na ordem de chegada dos protocolos.</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#dbeafe;">
+                    <i class="fa-solid fa-chart-line" style="color:#0b438a;"></i>
+                </div>
+                <h3 class="font-bold text-sm" style="color:#0b438a;">Impacto esperado</h3>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">Aumento da participação cidadã, melhoria da transparência pública, redução do tempo de resposta das ocorrências e fortalecimento da fiscalização comunitária por meio do uso estratégico de dados urbanos.</p>
+        </div>
+    </div>
+
+    <!-- CTA final -->
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+        <h3 class="text-lg font-extrabold mb-2" style="color:#0b438a;">Pronto para contribuir?</h3>
+        <p class="text-sm text-gray-400 mb-6">Faça uma denúncia agora mesmo, com ou sem cadastro.</p>
+        <div class="flex flex-wrap gap-3 justify-center">
+            <a href="/denuncia" style="background:#0b438a;"
+               class="flex items-center gap-2 text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition">
+                <i class="fa-solid fa-paper-plane"></i> Denúncia anônima
+            </a>
+            <a href="/cadastro"
+               class="flex items-center gap-2 font-bold px-6 py-3 rounded-xl hover:opacity-90 transition"
+               style="border:2px solid #0b438a;color:#0b438a;">
+                <i class="fa-solid fa-user-plus"></i> Criar conta
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

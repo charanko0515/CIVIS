@@ -76,14 +76,32 @@
                         📡 Clique no mapa, busque um endereço ou use o GPS
                     </div>
 
+                    <!-- Upload com preview -->
                     <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="text-sm font-semibold" style="color:#1e2d5a">Descrição</label>
-                            <label class="flex items-center gap-1 text-xs font-medium cursor-pointer" style="color:#0b438a">
-                                <i class="fa-solid fa-camera"></i> Adicionar imagem (opcional)
-                                <input type="file" name="foto" accept="image/*" class="hidden">
-                            </label>
+                        <label class="block text-sm font-semibold mb-2" style="color:#1e2d5a">Imagem da ocorrência</label>
+
+                        <!-- Zona de drop / clique principal -->
+                        <label id="zona-upload" class="flex flex-col items-center justify-center gap-2 w-full rounded-xl cursor-pointer transition-all duration-200"
+                               style="border:2px dashed #c7d7f0; background:#f8faff; padding:20px;">
+                            <img id="icone-camera" src="{{ url_for('static', filename='icons/e3faa16e-f138-4f9a-b89e-425379250474.png') }}" class="w-14 h-14 object-contain">
+                            <span class="text-xs font-medium" style="color:#0b438a;">Clique para adicionar foto</span>
+                            <input type="file" name="foto" id="input-foto" accept="image/*" capture="environment" class="hidden" multiple>
+                        </label>
+
+                        <!-- Grid de previews (aparece após selecionar) -->
+                        <div id="preview-grid" class="hidden mt-3 grid grid-cols-3 gap-2">
                         </div>
+
+                        <!-- Botão de adicionar mais (aparece após 1ª foto) -->
+                        <label id="btn-mais-fotos" class="hidden mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl cursor-pointer text-xs font-semibold transition hover:opacity-80"
+                               style="border:1.5px dashed #0b438a; color:#0b438a; background:#f0f6ff;">
+                            <i class="fa-solid fa-plus"></i> Adicionar mais fotos
+                            <input type="file" name="foto_extra" accept="image/*" class="hidden" multiple>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a">Descrição</label>
                         <textarea name="descricao" rows="4" class="input-field" placeholder="Descreva os detalhes da ocorrência..."></textarea>
                     </div>
 
@@ -98,7 +116,7 @@
 
         <!-- Mockup celular -->
         <div class="w-full lg:w-1/2 hidden lg:flex justify-center fade-up delay-1">
-            <div style="position:relative;width:290px;height:580px;background:linear-gradient(160deg,#2a2a3d,#1a1a2e);border-radius:46px;padding:14px;box-shadow:0 0 0 2px #3a3a5c,0 40px 80px rgba(0,0,0,.5);">
+            <div style="position:relative;width:min(290px,80vw);height:min(580px,75vh);background:linear-gradient(160deg,#2a2a3d,#1a1a2e);border-radius:46px;padding:14px;box-shadow:0 0 0 2px #3a3a5c,0 40px 80px rgba(0,0,0,.5);">
                 <div style="position:absolute;left:-3px;top:105px;width:3px;height:34px;background:#3a3a5c;border-radius:2px 0 0 2px"></div>
                 <div style="position:absolute;left:-3px;top:148px;width:3px;height:34px;background:#3a3a5c;border-radius:2px 0 0 2px"></div>
                 <div style="position:absolute;right:-3px;top:125px;width:3px;height:54px;background:#3a3a5c;border-radius:0 2px 2px 0"></div>
@@ -294,5 +312,50 @@
     }
     atualizarRelogio();
     setInterval(atualizarRelogio, 1000);
+</script>
+
+<script>
+function adicionarPreviews(arquivos, grid) {
+    Array.from(arquivos).forEach(arquivo => {
+        const leitor = new FileReader();
+        leitor.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'relative rounded-xl overflow-hidden';
+            div.style = 'aspect-ratio:1;';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-full object-cover">
+                <button type="button" onclick="this.parentElement.remove(); atualizarUI();"
+                    class="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
+                    style="background:rgba(0,0,0,0.5);">✕</button>`;
+            grid.appendChild(div);
+            atualizarUI();
+        };
+        leitor.readAsDataURL(arquivo);
+    });
+}
+
+function atualizarUI() {
+    const grid = document.getElementById('preview-grid');
+    const zona = document.getElementById('zona-upload');
+    const btnMais = document.getElementById('btn-mais-fotos');
+    const temFotos = grid.children.length > 0;
+    grid.classList.toggle('hidden', !temFotos);
+    zona.classList.toggle('hidden', temFotos);
+    btnMais.classList.toggle('hidden', !temFotos);
+}
+
+const inputFoto = document.getElementById('input-foto');
+if (inputFoto) {
+    inputFoto.addEventListener('change', function () {
+        adicionarPreviews(this.files, document.getElementById('preview-grid'));
+    });
+}
+
+const inputExtra = document.querySelector('[name="foto_extra"]');
+if (inputExtra) {
+    inputExtra.addEventListener('change', function () {
+        adicionarPreviews(this.files, document.getElementById('preview-grid'));
+    });
+}
 </script>
 {% endblock %}

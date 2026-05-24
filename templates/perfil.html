@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Perfil{% endblock %}
+{% block breadcrumb %}Perfil{% endblock %}
+{% block main_class %}block{% endblock %}
+
+{% block conteudo %}
+<div class="w-full max-w-2xl mx-auto px-4 py-8">
+
+    <!-- Card do perfil -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-extrabold"
+                 style="background:#0b438a;">
+                {{ usuario.nome[0].upper() }}
+            </div>
+            <div>
+                <h2 class="text-lg font-extrabold" style="color:#0b438a;">{{ usuario.nome }}</h2>
+               <h2 class="text-lg font-extrabold" style="color:#0b438a;">Vão me matar de burnout</h2>
+                <p class="text-xs text-gray-400">Membro desde {{ usuario.data_criacao[:10] }}</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 gap-3 text-sm">
+            <div class="flex justify-between border-b border-gray-100 pb-2">
+                <span class="text-gray-400">CPF</span>
+                <span class="font-semibold" style="color:#1e2d5a;">{{ usuario.cpf }}</span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 pb-2">
+                <span class="text-gray-400">E-mail</span>
+                <span class="font-semibold" style="color:#1e2d5a;">{{ usuario.email }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Denúncias registradas</span>
+                <span class="font-extrabold" style="color:#0b438a;">{{ denuncias|length }}</span>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
