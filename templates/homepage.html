@@ -230,12 +230,30 @@
                  : (marcador = L.marker([lat,lng]).addTo(mapa).bindPopup(label).openPopup());
     }
 
-    mapa.on('click', e => {
-        moverMarcador(e.latlng.lat, e.latlng.lng, ' Local selecionado');
-        mapa.setView(e.latlng);
-        document.getElementById('busca-endereco').value = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-        setStatus(` Local: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`, 'ok');
-    });
+   mapa.on('click', e => {
+    const { lat, lng } = e.latlng;
+    moverMarcador(lat, lng, '📍 Local selecionado');
+    mapa.setView(e.latlng);
+    setStatus('🔍 Buscando endereço...', 'info');
+
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`)
+        .then(r => r.json())
+        .then(d => {
+            const addr = d.address;
+            const rua = addr.road || addr.pedestrian || addr.footway || 'Rua desconhecida';
+            const cidade = addr.city || addr.town || addr.village || addr.municipality || 'Cidade desconhecida';
+            const estado = addr.state || 'Estado desconhecido';
+            const etiqueta = `${rua}, ${cidade} - ${estado}`;
+
+            moverMarcador(lat, lng);
+            document.getElementById('busca-endereco').value = etiqueta;
+            setStatus(`📍 Local: ${etiqueta}`, 'ok');
+        })
+        .catch(() => {
+            document.getElementById('busca-endereco').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setStatus('❌ Erro ao buscar endereço.', 'erro');
+        });
+});
 
     function buscarEndereco() {
         const termo = document.getElementById('busca-endereco').value.trim();
