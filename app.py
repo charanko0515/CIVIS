@@ -27,6 +27,11 @@ def conectar():
 # =========================
 @app.route('/')
 def home():
+    return render_template('landing.html')
+
+
+@app.route('/denuncia')
+def denuncia():
     conexao = conectar()
     cursor = conexao.cursor()
     cursor.execute("SELECT categoria, latitude, longitude FROM denuncias")
@@ -43,11 +48,6 @@ def login():
 @app.route('/cadastro')
 def cadastro():
     return render_template('cadastro.html')
-
-
-@app.route('/denuncia')
-def denuncia():
-    return render_template('denuncia.html')
 
 
 # =========================
@@ -97,7 +97,8 @@ def fazer_login():
     conexao.close()
     if usuario:
         sessao["nome_usuario"] = usuario[2]  # índice 2 = coluna nome
-        return redirect('/')
+        sessao["usuario_id"] = usuario[0]   # índice 0 = coluna id
+        return redirect('/denuncia')
 
     return 'CPF ou senha inválidos'
 
