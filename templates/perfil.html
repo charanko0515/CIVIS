@@ -15,7 +15,6 @@
             </div>
             <div>
                 <h2 class="text-lg font-extrabold" style="color:#0b438a;">{{ usuario.nome }}</h2>
-               <h2 class="text-lg font-extrabold" style="color:#0b438a;">Vão me matar de burnout</h2>
                 <p class="text-xs text-gray-400">Membro desde {{ usuario.data_criacao[:10] }}</p>
             </div>
         </div>
@@ -35,4 +34,39 @@
         </div>
     </div>
 
+    <!-- Histórico de denúncias -->
+    <h3 class="text-base font-extrabold mb-4" style="color:#0b438a;">Minhas denúncias</h3>
+
+    {% if denuncias %}
+        {% for d in denuncias %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-3 p-4 flex gap-4 items-start">
+            {% if d.foto_caminho %}
+            <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
+            <div class="flex-grow min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#dbeafe;color:#0b438a;">
+                        {{ d.categoria }}
+                    </span>
+                    <span class="text-xs text-gray-400">{{ d.data_registro[:10] }}</span>
+                </div>
+                <p class="text-sm text-gray-600 truncate">{{ d.descricao }}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                    <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
+                    {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-10 text-gray-400">
+            <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+            <p class="text-sm">Você ainda não fez nenhuma denúncia.</p>
+            <a href="/denuncia" class="text-sm font-semibold mt-1 inline-block" style="color:#0b438a;">Fazer agora</a>
+        </div>
+    {% endif %}
+
+</div>
 {% endblock %}
