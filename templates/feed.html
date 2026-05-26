@@ -31,7 +31,9 @@
                     <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:#dbeafe;color:#0b438a;">
                         {{ d.categoria }}
                     </span>
-                    <span class="text-xs text-gray-400">{{ d.data_registro }}</span>
+                    <span class="text-xs text-gray-400">
+                        {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
+                    </span>
                 </div>
 
                 <!-- Descrição -->

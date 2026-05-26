@@ -4,69 +4,127 @@
 {% block main_class %}block{% endblock %}
 
 {% block conteudo %}
-<div class="w-full max-w-2xl mx-auto px-4 py-8">
+<div class="w-full max-w-3xl mx-auto px-4 py-8">
 
-    <!-- Card do perfil -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-extrabold"
+    <!-- Cabeçalho estilo Instagram -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+
+        <div class="flex items-center gap-6">
+
+            <!-- Avatar -->
+            <div class="w-24 h-24 rounded-full flex items-center justify-center
+                        text-white text-3xl font-extrabold flex-shrink-0"
                  style="background:#0b438a;">
                 {{ usuario.nome[0].upper() }}
             </div>
-            <div>
-                <h2 class="text-lg font-extrabold" style="color:#0b438a;">{{ usuario.nome }}</h2>
-                <p class="text-xs text-gray-400">Membro desde {{ usuario.data_criacao[:10] }}</p>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 gap-3 text-sm">
-            <div class="flex justify-between border-b border-gray-100 pb-2">
-                <span class="text-gray-400">CPF</span>
-                <span class="font-semibold" style="color:#1e2d5a;">{{ usuario.cpf }}</span>
-            </div>
-            <div class="flex justify-between border-b border-gray-100 pb-2">
-                <span class="text-gray-400">E-mail</span>
-                <span class="font-semibold" style="color:#1e2d5a;">{{ usuario.email }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-gray-400">Denúncias registradas</span>
-                <span class="font-extrabold" style="color:#0b438a;">{{ denuncias|length }}</span>
+
+            <!-- Info -->
+            <div class="flex-1">
+
+                <h2 class="text-xl font-extrabold mb-4"
+                    style="color:#0b438a;">
+                    {{ usuario.nome }}
+                </h2>
+
+                <!-- Estatísticas -->
+                <div class="flex gap-8 text-sm mb-4">
+
+                    <div>
+                        <span class="font-extrabold text-lg"
+                              style="color:#0b438a;">
+                            {{ denuncias|length }}
+                        </span>
+                        <p class="text-gray-400">denúncias</p>
+                    </div>
+
+                    <div>
+                        <span class="font-extrabold text-lg"
+                              style="color:#0b438a;">
+                            {{ usuario.data_criacao[:10] }}
+                        </span>
+                        <p class="text-gray-400">membro desde</p>
+                    </div>
+
+                </div>
+
+                <!-- Dados -->
+                <p class="text-sm text-gray-500">{{ usuario.email }}</p>
+                <p class="text-sm text-gray-400">CPF {{ usuario.cpf }}</p>
+
             </div>
         </div>
     </div>
 
-    <!-- Histórico de denúncias -->
-    <h3 class="text-base font-extrabold mb-4" style="color:#0b438a;">Minhas denúncias</h3>
+    <!-- Título -->
+    <div class="flex items-center gap-2 mb-5">
+        <i class="fa-solid fa-table-cells-large"
+           style="color:#0b438a;"></i>
+        <h3 class="text-sm font-bold uppercase tracking-wide"
+            style="color:#0b438a;">
+            Minhas denúncias
+        </h3>
+    </div>
 
+    <!-- Grid estilo Instagram -->
     {% if denuncias %}
+    <div class="grid grid-cols-3 gap-2">
+
         {% for d in denuncias %}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-3 p-4 flex gap-4 items-start">
+        <div class="relative aspect-square rounded-xl overflow-hidden
+                    bg-gray-100 group cursor-pointer">
+
             {% if d.foto_caminho %}
-            <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover">
+            <img src="/{{ d.foto_caminho }}"
+                 class="w-full h-full object-cover
+                        group-hover:scale-105 transition duration-300">
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center"
+                 style="background:#dbeafe;">
+                <i class="fa-solid fa-circle-exclamation
+                          text-3xl"
+                   style="color:#0b438a;"></i>
             </div>
             {% endif %}
-            <div class="flex-grow min-w-0">
-                <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#dbeafe;color:#0b438a;">
-                        {{ d.categoria }}
-                    </span>
-                    <span class="text-xs text-gray-400">{{ d.data_registro[:10] }}</span>
-                </div>
-                <p class="text-sm text-gray-600 truncate">{{ d.descricao }}</p>
-                <p class="text-xs text-gray-400 mt-1">
-                    <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
-                    {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
+
+            <!-- Categoria -->
+            <div class="absolute top-2 left-2
+                        text-[10px] font-bold px-2 py-1 rounded-full
+                        bg-white/90"
+                 style="color:#0b438a;">
+                {{ d.categoria }}
+            </div>
+
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-black/50 opacity-0
+                        group-hover:opacity-100 transition
+                        flex flex-col justify-end p-3">
+
+                <p class="text-white text-xs line-clamp-2 mb-2">
+                    {{ d.descricao }}
                 </p>
+
+                <span class="text-white text-[11px]">
+                    {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
+                </span>
+
             </div>
         </div>
         {% endfor %}
-    {% else %}
-        <div class="text-center py-10 text-gray-400">
-            <i class="fa-solid fa-box-open text-3xl mb-2"></i>
-            <p class="text-sm">Você ainda não fez nenhuma denúncia.</p>
-            <a href="/denuncia" class="text-sm font-semibold mt-1 inline-block" style="color:#0b438a;">Fazer agora</a>
-        </div>
-    {% endif %}
 
+    </div>
+
+    {% else %}
+    <div class="text-center py-12 text-gray-400">
+        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+        <p>Você ainda não fez nenhuma denúncia.</p>
+
+        <a href="/denuncia"
+           class="inline-block mt-3 text-sm font-bold"
+           style="color:#0b438a;">
+            Fazer agora
+        </a>
+    </div>
+    {% endif %}
+    
 </div>
 {% endblock %}
