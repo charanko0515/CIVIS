@@ -6,10 +6,33 @@
 {% block conteudo %}
 <div class="w-full max-w-2xl mx-auto px-4 py-8">
 
+    <!-- Saudação ao usuário -->
+    {% if nome_usuario %}
+    <div class="relative overflow-hidden rounded-2xl mb-6 px-6 py-5 flex items-center gap-4" style="background: linear-gradient(135deg, #0b438a 0%, #1a6abf 100%);">
+        <!-- Avatar inicial -->
+        <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-lg font-extrabold shadow-inner"
+             style="background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.3);">
+            {{ nome_usuario[0].upper() }}
+        </div>
+        <!-- Texto -->
+        <div>
+            <p class="text-white text-base font-extrabold leading-tight">
+                Olá, {{ nome_usuario.split()[0] }}! 👋
+            </p>
+            <p class="text-sm mt-0.5" style="color:#a8d0f0;">
+                Veja o que está acontecendo na sua cidade.
+            </p>
+        </div>
+        <!-- Detalhe decorativo -->
+        <div class="absolute right-0 top-0 h-full flex items-center opacity-10 pointer-events-none select-none" aria-hidden="true">
+            <i class="fa-solid fa-city text-white" style="font-size: 90px; margin-right: -10px;"></i>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Topo -->
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-extrabold" style="color:#0b438a;">Ocorrências da comunidade</h2>
-
     </div>
 
     {% if denuncias %}
