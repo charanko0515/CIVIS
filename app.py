@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session as sessao
+from flask import Flask, request, render_template, redirect, session as sessao, jsonify
 import os
 from datetime import datetime
 
@@ -28,7 +28,7 @@ def home():
 def denuncia():
     # Chama a função isolada no db
     ocorrencias = db.buscar_ocorrencias()
-    return render_template('homepage.html', ocorrencias=ocorrencias)
+    return render_template('denuncia.html', ocorrencias=ocorrencias)
 
 
 @app.route('/login')
@@ -107,7 +107,7 @@ def receber_denuncia():
     caminho_banco = f'static/uploads/{foto.filename}'
     
     # Salva no banco e pega o ID gerado
-    protocolo = db.inserir_denuncia(categoria, descricao, latitude, longitude, caminho_banco)
+    protocolo = db.inserir_denuncia(categoria, descricao, latitude, longitude, caminho_banco, sessao.get('usuario_id'))
     
     return render_template('confirmacao.html',
         protocolo=protocolo, categoria=categoria,
@@ -125,6 +125,10 @@ def dar_up(denuncia_id):
         return redirect('/login')
         
     db.alternar_up(denuncia_id, sessao['usuario_id'])
+
+    # Se veio do fetch (feed), retorna JSON sem recarregar
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'ok': True})
     return redirect('/feed')
 
 

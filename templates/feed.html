@@ -6,75 +6,125 @@
 {% block conteudo %}
 <div class="w-full max-w-2xl mx-auto px-4 py-8">
 
+    <!-- Topo -->
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-extrabold" style="color:#0b438a;">Ocorrências da comunidade</h2>
-        <a href="/denuncia" style="background:#0b438a;"
-           class="text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> Nova denúncia
-        </a>
+
     </div>
 
     {% if denuncias %}
-        {% for d in denuncias %}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
 
-            <!-- Foto -->
-            {% if d.foto_caminho %}
-            <div class="w-full h-48 overflow-hidden">
-                <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover">
-            </div>
-            {% endif %}
+    <!-- Cards em rolagem vertical -->
+    <div class="flex flex-col gap-4">
+            {% for d in denuncias %}
+            <div class="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-            <div class="p-5">
-                <!-- Categoria e data -->
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:#dbeafe;color:#0b438a;">
-                        {{ d.categoria }}
-                    </span>
-                    <span class="text-xs text-gray-400">
-                        {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
-                    </span>
+                <!-- Foto -->
+                {% if d.foto_caminho %}
+                <div class="w-full overflow-hidden" style="aspect-ratio:3/4;">
+                    <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover">
                 </div>
+                {% endif %}
 
-                <!-- Descrição -->
-                <p class="text-sm text-gray-600 mb-3">{{ d.descricao }}</p>
+                <div class="p-5">
+                    <!-- Categoria e data -->
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:#dbeafe;color:#0b438a;">
+                            {{ d.categoria }}
+                        </span>
+                        <span class="text-xs text-gray-400">
+                            {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
+                        </span>
+                    </div>
 
-                <!-- Local -->
-                <p class="text-xs text-gray-400 mb-4">
-                    <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
-                    {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
-                </p>
+                    <!-- Descrição -->
+                    <p class="text-sm text-gray-600 mb-3">{{ d.descricao }}</p>
 
-                <!-- Botão Up -->
-                <div class="flex items-center gap-3">
-                    <form action="/up/{{ d.id }}" method="POST">
-                        {% if d.id in ups_dados %}
-                        <button type="submit"
-                            class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition text-white"
-                            style="background:#0b438a;">
-                            <i class="fa-solid fa-arrow-up"></i>
-                            {{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}
-                        </button>
-                        {% else %}
-                        <button type="submit"
-                            class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition border"
-                            style="border-color:#0b438a;color:#0b438a;">
-                            <i class="fa-solid fa-arrow-up"></i>
-                            {{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}
-                        </button>
-                        {% endif %}
-                    </form>
+                    <!-- Local -->
+                    <p class="text-xs text-gray-400 mb-4">
+                        <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
+                        {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
+                    </p>
+
+                    <!-- Botão Up (sem reload) -->
+                    <button
+                        onclick="darUp(this)"
+                        data-id="{{ d.id }}"
+                        data-ups="{{ d.total_ups }}"
+                        data-ativo="{{ 'true' if d.id in ups_dados else 'false' }}"
+                        class="btn-up flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition
+                               {{ 'text-white' if d.id in ups_dados else 'border' }}"
+                        style="{{ 'background:#0b438a;' if d.id in ups_dados else 'border-color:#0b438a;color:#0b438a;' }}">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        <span class="ups-count">{{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}</span>
+                    </button>
                 </div>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+    </div>
+
     {% else %}
-        <div class="text-center py-16 text-gray-400">
-            <i class="fa-solid fa-box-open text-4xl mb-3"></i>
-            <p class="text-sm">Nenhuma ocorrência registrada ainda.</p>
-            <a href="/denuncia" class="text-sm font-semibold mt-2 inline-block" style="color:#0b438a;">Seja o primeiro a registrar</a>
-        </div>
+    <div class="text-center py-16 text-gray-400">
+        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+        <p class="text-sm">Nenhuma ocorrência registrada ainda.</p>
+        <a href="/denuncia" class="text-sm font-semibold mt-2 inline-block" style="color:#0b438a;">Seja o primeiro a registrar</a>
+    </div>
     {% endif %}
 
 </div>
+<!-- Botão flutuante Nova Denúncia -->
+<a href="/denuncia" id="btn-flutuante"
+   class="fixed bottom-6 right-6 flex items-center gap-2 text-white font-bold px-5 py-3 rounded-full shadow-lg transition-all duration-300 z-40"
+   style="background:#0b438a;">
+    <i class="fa-solid fa-plus"></i>
+    <span id="label-flutuante">Nova denúncia</span>
+</a>
+
 {% endblock %}
+
+{% block scripts %}
+<script>
+    function darUp(btn) {
+        const id    = btn.dataset.id;
+        const ativo = btn.dataset.ativo === 'true';
+        let ups     = parseInt(btn.dataset.ups);
+
+        fetch(`/up/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => {
+                if (!r.ok) { window.location = '/login'; return; }
+
+                // Alterna estado visual
+                const novoAtivo = !ativo;
+                ups = novoAtivo ? ups + 1 : ups - 1;
+                btn.dataset.ativo = novoAtivo;
+                btn.dataset.ups   = ups;
+
+                const label = ups === 1 ? '1 up' : `${ups} ups`;
+                btn.querySelector('.ups-count').innerText = label;
+
+                if (novoAtivo) {
+                    btn.style.background   = '#0b438a';
+                    btn.style.color        = '#fff';
+                    btn.style.border       = 'none';
+                } else {
+                    btn.style.background   = '';
+                    btn.style.color        = '#0b438a';
+                    btn.style.border       = '1.5px solid #0b438a';
+                }
+            })
+            .catch(() => window.location = '/login');
+    }
+
+    // Esconde o label ao rolar, mostra só o ícone
+    let ultimoScroll = 0;
+    window.addEventListener('scroll', () => {
+        const atual = window.scrollY;
+        const label = document.getElementById('label-flutuante');
+        if (atual > ultimoScroll && atual > 100) {
+            label.classList.add('hidden');
+        } else {
+            label.classList.remove('hidden');
+        }
+        ultimoScroll = atual;
+    });
+</script>{% endblock %}
