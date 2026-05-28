@@ -10,11 +10,12 @@ para o programa **Do Piauí para o Mundo 2026**.
 
 | Nome | Função |
 |---|---|
+| Marcelo Augusto de Sousa Medeiros | Desenvolvimento |
 | Maria Alice Alves Mendes | Desenvolvimento |
 | Maria Clara Rodrigues da Silva | Desenvolvimento |
 | José Wanderson da Silva Trindade | Desenvolvimento |
-| Marcelo Augusto de Sousa Medeiros | Desenvolvimento |
-| Paulo Vitor | Desenvolvimento |
+| Paulo Vitor Barros de Souza | Desenvolvimento |
+| Manoel Araujo Veloso Neto | Professor orientador |
 
 ---
 
