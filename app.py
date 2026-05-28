@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session as sessao, jsonify
+from flask import Flask, request, render_template, redirect, session as sessao, jsonify, flash
 import os
 from datetime import datetime
 
@@ -73,8 +73,26 @@ def cadastrar_usuario_rota():
     email = request.form.get('email')
     senha = request.form.get('senha')
     
-    db.cadastrar_usuario(cpf, nome, email, senha)
-    return redirect('/login')
+    # 1. Remove pontos e traços para validar apenas os números
+    cpf_limpo = cpf.replace('.', '').replace('-', '').strip()
+    
+    # 2. VALIDAÇÃO DO CPF: Se não tiver 11 números ou se conter letras
+    if len(cpf_limpo) != 11 or not cpf_limpo.isdigit():
+        flash('CPF inválido! O campo deve conter exatamente 11 números.', 'danger')
+        return redirect('/cadastro') # Mandamos de volta para a página de cadastro
+    
+    # 3. Se o CPF for válido, tenta salvar no banco de dados
+    try:
+        # Passamos o 'cpf_limpo' para salvar padronizado (só números) no SQLite
+        db.cadastrar_usuario(cpf_limpo, nome, email, senha)
+        flash('Conta criada com sucesso!', 'success')
+        return redirect('/login')
+        
+    except Exception as e:
+        # Se der erro no banco (como CPF ou Email já cadastrado)
+        flash('Erro ao cadastrar: Este e-mail ou CPF já está em uso.', 'danger')
+        return redirect('/cadastro')
+
 
 
 # =========================
