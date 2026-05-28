@@ -69,7 +69,7 @@ CIVIS/
 └── templates/
     ├── base.html           # Template base (header, sidebar, footer)
     ├── landing.html        # Página inicial com apresentação do projeto
-    ├── Denuncia.html       # Formulário de denúncia + mapa
+    ├── denuncia.html       # Formulário de denúncia + mapa
     ├── feed.html           # Feed de ocorrências com ups
     ├── perfil.html         # Perfil e histórico do usuário
     ├── login.html          # Login por CPF e senha
@@ -86,7 +86,7 @@ CIVIS/
 | Campo | Tipo | Descrição |
 |---|---|---|
 | id | INTEGER | Chave primária |
-| cpf | TEXT UNIQUE NOT NULL | CPF único |
+| cpf | TEXT UNIQUE NOT NULL | CPF único (somente dígitos) |
 | nome | TEXT NOT NULL | Nome completo |
 | email | TEXT NOT NULL | E-mail |
 | senha | TEXT NOT NULL | Senha |
@@ -174,6 +174,24 @@ http://localhost:5000
 - `database.py` faz migrações automáticas — não apaga dados ao rodar novamente
 - Feed e perfil são protegidos — redirecionam para `/login` se não autenticado
 - Up no feed usa `fetch` assíncrono — sem recarregamento de página
+
+---
+
+## Pontos de melhoria futura
+
+Itens identificados para evolução do projeto:
+
+**Segurança**
+- As senhas estão armazenadas em texto puro — recomenda-se usar hash com `werkzeug.security` (`generate_password_hash` / `check_password_hash`)
+- A `secret_key` está hardcoded no `app.py` — em produção, deve vir de variável de ambiente
+- O nome do arquivo de foto enviado pelo usuário é salvo sem sanitização — usar `werkzeug.utils.secure_filename`
+
+**Robustez**
+- O banco é acessado com caminho relativo (`database.db`) — usar `os.path` para garantir o caminho absoluto
+
+**Funcionalidade**
+- Denúncias marcadas como anônimas ainda expõem o nome do usuário no feed — o template `feed.html` precisa verificar o campo `anonimo` antes de exibir
+- A tabela `ups` não tem constraint `UNIQUE(denuncia_id, usuario_id)` — adicionar garante integridade mesmo em casos de requisições simultâneas
 
 ---
 
