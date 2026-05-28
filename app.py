@@ -45,7 +45,7 @@ def cadastro():
 def feed():
     if not sessao.get('usuario_id'):
         return redirect('/login')
-        
+
     # Busca os dados estruturados do banco
     denuncias, ups_dados = db.buscar_feed_dados(sessao['usuario_id'])
     return render_template('feed.html', denuncias=denuncias, ups_dados=ups_dados)
@@ -55,7 +55,7 @@ def feed():
 def perfil():
     if not sessao.get('usuario_id'):
         return redirect('/login')
-        
+
     usuario, denuncias = db.buscar_perfil_dados(sessao['usuario_id'])
     if not usuario:
         sessao.clear()
@@ -72,22 +72,22 @@ def cadastrar_usuario_rota():
     nome  = request.form.get('nome')
     email = request.form.get('email')
     senha = request.form.get('senha')
-    
+
     # 1. Remove pontos e traços para validar apenas os números
     cpf_limpo = cpf.replace('.', '').replace('-', '').strip()
-    
+
     # 2. VALIDAÇÃO DO CPF: Se não tiver 11 números ou se conter letras
     if len(cpf_limpo) != 11 or not cpf_limpo.isdigit():
         flash('CPF inválido! O campo deve conter exatamente 11 números.', 'danger')
         return redirect('/cadastro') # Mandamos de volta para a página de cadastro
-    
+
     # 3. Se o CPF for válido, tenta salvar no banco de dados
     try:
         # Passamos o 'cpf_limpo' para salvar padronizado (só números) no SQLite
         db.cadastrar_usuario(cpf_limpo, nome, email, senha)
         flash('Conta criada com sucesso!', 'success')
         return redirect('/login')
-        
+
     except Exception as e:
         # Se der erro no banco (como CPF ou Email já cadastrado)
         flash('Erro ao cadastrar: Este e-mail ou CPF já está em uso.', 'danger')
@@ -100,15 +100,16 @@ def cadastrar_usuario_rota():
 # =========================
 @app.route('/login', methods=['POST'])
 def fazer_login():
-    cpf   = request.form.get('cpf')
+    cpf   = request.form.get('cpf', '').replace('.', '').replace('-', '').strip()
     senha = request.form.get('senha')
-    
+
     usuario = db.verificar_login(cpf, senha)
     if usuario:
         sessao["nome_usuario"] = usuario[2]  # índice 2 = coluna nome
         sessao["usuario_id"]   = usuario[0]  # índice 0 = coluna id
         return redirect('/feed')
-    return 'CPF ou senha inválidos'
+    flash('CPF ou senha inválidos.', 'danger')
+    return redirect('/login')
 
 
 # =========================
@@ -123,15 +124,15 @@ def receber_denuncia():
     longitude = request.form.get('longitude')
     foto      = request.files.get('foto')
     anonimo   = 1 if request.form.get('anonimo') == 'on' else 0
-    
+
     foto_caminho_salvar = os.path.join(UPLOAD_FOLDER, foto.filename)
     foto.save(foto_caminho_salvar)
-    
+
     caminho_banco = f'static/uploads/{foto.filename}'
-    
+
     # Salva no banco e pega o ID gerado
     protocolo = db.inserir_denuncia(titulo, categoria, descricao, latitude, longitude, caminho_banco, anonimo, sessao.get('usuario_id'))
-    
+
     return render_template('confirmacao.html',
         protocolo=protocolo, titulo=titulo, categoria=categoria,
         latitude=latitude, longitude=longitude,
@@ -146,7 +147,7 @@ def receber_denuncia():
 def dar_up(denuncia_id):
     if not sessao.get('usuario_id'):
         return redirect('/login')
-        
+
     db.alternar_up(denuncia_id, sessao['usuario_id'])
 
     # Se veio do fetch (feed), retorna JSON sem recarregar
