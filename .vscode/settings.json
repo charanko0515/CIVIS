@@ -1,0 +1,15 @@
+{
+  "html.validate.scripts": false,
+  "html.validate.styles": false,
+  "css.validate": false,
+  "html.completion.attributeDefaultValue": "doublequotes",
+  "files.associations": {
+    "*.html": "jinja-html"
+  },
+  "emmet.includeLanguages": {
+    "jinja-html": "html"
+  },
+  "[jinja-html]": {
+    "editor.defaultFormatter": "monosans.jinja"
+  }
+}

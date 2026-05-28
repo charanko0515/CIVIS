@@ -4,118 +4,107 @@
 {% block main_class %}block{% endblock %}
 
 {% block conteudo %}
-<div class="w-full max-w-2xl mx-auto px-4 py-8">
+<div class="w-full max-w-6xl mx-auto px-4 py-6">
 
     <!-- Saudação ao usuário -->
     {% if nome_usuario %}
     <div class="relative overflow-hidden rounded-2xl mb-6 px-6 py-5 flex items-center gap-4" style="background: linear-gradient(135deg, #0b438a 0%, #1a6abf 100%);">
-        <!-- Avatar inicial -->
         <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-lg font-extrabold shadow-inner"
              style="background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.3);">
             {{ nome_usuario[0].upper() }}
         </div>
-        <!-- Texto -->
         <div>
             <p class="text-white text-base font-extrabold leading-tight">
                 Olá, {{ nome_usuario.split()[0] }}! 👋
             </p>
             <p class="text-sm mt-0.5" style="color:#a8d0f0;">
                 Veja o que está acontecendo na sua cidade.
-            </p>    
+            </p>
         </div>
-        <!-- Detalhe decorativo -->
         <div class="absolute right-0 top-0 h-full flex items-center opacity-10 pointer-events-none select-none" aria-hidden="true">
             <i class="fa-solid fa-city text-white" style="font-size: 90px; margin-right: -10px;"></i>
         </div>
     </div>
     {% endif %}
 
-    <!-- Topo -->
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-extrabold" style="color:#0b438a;">Ocorrências da comunidade</h2>
+    <!-- Título -->
+    <div class="flex items-center gap-2 mb-5">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#0b438a;">
+            <i class="fa-solid fa-list text-white text-sm"></i>
+        </div>
+        <h2 class="text-lg font-extrabold" style="color:#0b438a;">Ocorrências da comunidade</h2>
     </div>
 
     {% if denuncias %}
 
-    <!-- Cards em rolagem vertical -->
-    <div class="flex flex-col gap-4">
-            {% for d in denuncias %}
-            <div class="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Grid 3 colunas com cards completos -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for d in denuncias %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition-shadow duration-200"
+             onclick="abrirCard({{ loop.index0 }})">
 
-                <!-- Foto -->
-                {% if d.foto_caminho %}
-                <div class="w-full overflow-hidden" style="aspect-ratio:3/4;">
-                    <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover">
-                </div>
-                {% endif %}
-
-                <div class="p-5">
-                    <!-- Categoria e data -->
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold px-3 py-1 rounded-full" style="background:#dbeafe;color:#0b438a;">
-                            {{ d.categoria }}
-                        </span>
-                        <span class="text-xs text-gray-400">
-                            {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
-                        </span>
-                    </div>
-
-                    <!-- Título e Status -->
-                    <div class="flex items-start justify-between gap-2 mb-2">
-                        <h3 class="text-base font-extrabold leading-snug" style="color:#1e2d5a;">
-                            {{ d.titulo }}
-                        </h3>
-                        <span class="flex-shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full
-                            {% if d.status == 'Resolvida' %}
-                                bg-green-100 text-green-700
-                            {% elif d.status == 'Em andamento' %}
-                                bg-amber-100 text-amber-700
-                            {% else %}
-                                bg-red-100 text-red-700
-                            {% endif %}">
-                            {{ d.status }}
-                        </span>
-                    </div>
-
-                    <!-- Autor -->
-                    <div class="flex items-center gap-1.5 mb-3">
-                        {% if d.anonimo %}
-                        <i class="fa-solid fa-user-secret text-xs" style="color:#6b7280;"></i>
-                        <span class="text-xs font-semibold text-gray-500">Anônimo</span>
-                        {% else %}
-                        <i class="fa-solid fa-user text-xs" style="color:#0b438a;"></i>
-                        <span class="text-xs font-semibold" style="color:#0b438a;">{{ d.nome_usuario or 'Usuário' }}</span>
-                        {% endif %}
-                    </div>
-
-                    <!-- Descrição -->
-                    <p class="text-sm text-gray-600 mb-3">{{ d.descricao }}</p>
-
-                    <!-- Local -->
-                    <p class="text-xs text-gray-400 mb-4">
-                        <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
-                        {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
-                    </p>
-
-                    <!-- Botão Up (sem reload) -->
-                    <button
-                        onclick="darUp(this)"
-                        data-id="{{ d.id }}"
-                        data-ups="{{ d.total_ups }}"
-                        data-ativo="{{ 'true' if d.id in ups_dados else 'false' }}"
-                        class="btn-up flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition
-                               {{ 'text-white' if d.id in ups_dados else 'border' }}"
-                        style="{{ 'background:#0b438a;' if d.id in ups_dados else 'border-color:#0b438a;color:#0b438a;' }}">
-                        <i class="fa-solid fa-arrow-up"></i>
-                        <span class="ups-count">{{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}</span>
-                    </button>
-                </div>
+            <!-- Foto esticada proporção 3/4 -->
+            {% if d.foto_caminho %}
+            <div class="w-full overflow-hidden flex-shrink-0" style="aspect-ratio: 4/5;">
+                <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover" alt="{{ d.titulo }}">
             </div>
-            {% endfor %}
+            {% else %}
+            <div class="w-full flex-shrink-0 flex flex-col items-center justify-center" style="aspect-ratio: 4/5; background:#e8f0fb;">
+                <i class="fa-solid
+                    {% if d.categoria == 'Buraco na via' %} fa-road-circle-xmark
+                    {% elif d.categoria == 'Iluminação' %} fa-lightbulb
+                    {% elif d.categoria == 'Lixo' %} fa-trash-can
+                    {% elif d.categoria == 'Segurança' %} fa-shield-halved
+                    {% else %} fa-triangle-exclamation
+                    {% endif %} text-3xl mb-2" style="color:#0b438a; opacity:0.4;"></i>
+                <span class="text-xs font-semibold text-center px-2" style="color:#0b438a; opacity:0.5;">{{ d.categoria }}</span>
+            </div>
+            {% endif %}
+
+            <!-- Infos do card -->
+            <div class="p-4 flex flex-col flex-1">
+
+                <!-- Categoria + Data -->
+                <div class="flex items-center justify-between mb-2">
+                    <span class="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style="background:#dbeafe; color:#0b438a;">
+                        <i class="fa-solid fa-tag text-[9px]"></i>
+                        {{ d.categoria }}
+                    </span>
+                    <span class="text-xs text-gray-400 flex items-center gap-1">
+                        <i class="fa-regular fa-calendar text-[10px]"></i>
+                        {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
+                    </span>
+                </div>
+
+                <!-- Descrição -->
+                <p class="text-sm text-gray-600 mb-3 leading-snug line-clamp-2">{{ d.descricao }}</p>
+
+                <!-- Local -->
+                <p class="text-xs text-gray-400 mb-4 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
+                    {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
+                </p>
+
+                <!-- Botão Up -->
+                <button
+                    onclick="event.stopPropagation(); darUp(this)"
+                    data-id="{{ d.id }}"
+                    data-ups="{{ d.total_ups }}"
+                    data-ativo="{{ 'true' if d.id in ups_dados else 'false' }}"
+                    class="btn-up mt-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition w-fit
+                           {{ 'text-white' if d.id in ups_dados else 'border' }}"
+                    style="{{ 'background:#0b438a;' if d.id in ups_dados else 'border-color:#0b438a; color:#0b438a;' }}">
+                    <i class="fa-solid fa-arrow-up"></i>
+                    <span class="ups-count">{{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}</span>
+                </button>
+
+            </div>
+        </div>
+        {% endfor %}
     </div>
 
     {% else %}
-    <div class="text-center py-16 text-gray-400">
+    <div class="text-center py-24 text-gray-400">
         <i class="fa-solid fa-box-open text-4xl mb-3"></i>
         <p class="text-sm">Nenhuma ocorrência registrada ainda.</p>
         <a href="/denuncia" class="text-sm font-semibold mt-2 inline-block" style="color:#0b438a;">Seja o primeiro a registrar</a>
@@ -123,7 +112,308 @@
     {% endif %}
 
 </div>
-<!-- Botão flutuante Nova Denúncia -->
+
+<!-- ============================================================
+     MODAL LIGHTBOX
+     ============================================================ -->
+<div id="card-modal" class="fixed inset-0 z-50 flex items-end justify-center hidden" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);" onclick="fecharModal(event)">
+    <div class="relative w-full max-w-lg bg-white rounded-t-3xl shadow-2xl flex flex-col" style="max-height:93vh;" onclick="event.stopPropagation()">
+
+        <!-- Puxador -->
+        <div class="flex justify-center pt-3 pb-2 flex-shrink-0">
+            <div class="w-10 h-1 rounded-full bg-gray-300"></div>
+        </div>
+
+        <!-- Botão fechar -->
+        <button onclick="fecharModalBtn()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full z-10" style="background:#f1f5f9;">
+            <i class="fa-solid fa-xmark text-gray-500 text-sm"></i>
+        </button>
+
+        <!-- Conteúdo rolável -->
+        <div id="modal-content" class="overflow-y-auto flex-1 pb-6"></div>
+    </div>
+</div>
+
+<!-- Dados JSON -->
+<script>
+const DENUNCIAS = [
+    {% for d in denuncias %}
+    {
+        id: {{ d.id }},
+        titulo: {{ d.titulo | tojson }},
+        descricao: {{ d.descricao | tojson }},
+        categoria: {{ d.categoria | tojson }},
+        status: {{ d.status | tojson }},
+        data: "{{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}",
+        foto: {% if d.foto_caminho %}"{{ d.foto_caminho }}"{% else %}null{% endif %},
+        lat: {{ d.latitude }},
+        lng: {{ d.longitude }},
+        ups: {{ d.total_ups }},
+        upAtivo: {{ 'true' if d.id in ups_dados else 'false' }},
+        anonimo: {{ 'true' if d.anonimo else 'false' }},
+        autor: {{ (d.nome_usuario or 'Usuário') | tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+const STATUS_CONFIG = {
+    'Resolvida':    { cls: 'bg-green-100 text-green-700',  icon: 'fa-circle-check',    cor: '#16a34a' },
+    'Em andamento': { cls: 'bg-amber-100 text-amber-700',  icon: 'fa-clock',           cor: '#d97706' },
+    'Pendente':     { cls: 'bg-red-100 text-red-700',      icon: 'fa-circle-exclamation', cor: '#dc2626' }
+};
+
+const CAT_ICON = {
+    'Buraco na via':   'fa-road-circle-xmark',
+    'Iluminação':      'fa-lightbulb',
+    'Lixo':            'fa-trash-can',
+    'Segurança':       'fa-shield-halved',
+    'Limpeza Urbana':  'fa-broom',
+    'Infraestrutura':  'fa-hard-hat',
+    'Meio Ambiente':   'fa-leaf',
+    'Parques e Praças':'fa-tree',
+    'Animais':         'fa-paw',
+};
+
+const enderecoCache = {};
+
+async function geocodeReverso(lat, lng) {
+    const key = `${lat},${lng}`;
+    if (enderecoCache[key]) return enderecoCache[key];
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`);
+        const data = await res.json();
+        const a = data.address || {};
+        const rua    = a.road || a.pedestrian || a.path || '';
+        const bairro = a.suburb || a.neighbourhood || a.quarter || '';
+        const cidade = a.city || a.town || a.village || a.municipality || '';
+        const estado = a.state_code || a.state || '';
+        const partes = [rua, bairro, cidade, estado].filter(Boolean);
+        const resultado = partes.length ? partes.join(', ') : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        enderecoCache[key] = resultado;
+        return resultado;
+    } catch {
+        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+}
+
+async function abrirCard(idx) {
+    const d = DENUNCIAS[idx];
+    const modal = document.getElementById('card-modal');
+    const content = document.getElementById('modal-content');
+
+    const st = STATUS_CONFIG[d.status] || STATUS_CONFIG['Pendente'];
+    const upStyle = d.upAtivo
+        ? 'background:#0b438a; color:#fff; border:none;'
+        : 'background:#fff; border:2px solid #0b438a; color:#0b438a;';
+
+    const catIcon = CAT_ICON[d.categoria] || 'fa-triangle-exclamation';
+
+    const fotoHtml = d.foto
+        ? `<div class="w-full overflow-hidden" style="aspect-ratio:4/3;">
+               <img src="/${d.foto}" class="w-full h-full object-cover">
+           </div>`
+        : `<div class="w-full flex flex-col items-center justify-center gap-2" style="aspect-ratio:4/3; background:linear-gradient(135deg,#e8f0fb,#dbeafe);">
+               <i class="fa-solid ${catIcon} text-5xl" style="color:#0b438a; opacity:0.25;"></i>
+               <span class="text-xs font-semibold" style="color:#0b438a; opacity:0.4;">${d.categoria}</span>
+           </div>`;
+
+    const autorHtml = d.anonimo
+        ? `<div class="flex items-center gap-2">
+               <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#f1f5f9;">
+                   <i class="fa-solid fa-user-secret text-sm text-gray-400"></i>
+               </div>
+               <span class="text-sm font-semibold text-gray-500">Anônimo</span>
+           </div>`
+        : `<div class="flex items-center gap-2">
+               <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white" style="background:#0b438a;">
+                   ${d.autor[0].toUpperCase()}
+               </div>
+               <span class="text-sm font-semibold" style="color:#0b438a;">${d.autor}</span>
+           </div>`;
+
+    // Monta o modal com endereço temporário (carregando...)
+    content.innerHTML = `
+        ${fotoHtml}
+
+        <div class="px-5 pt-5">
+
+            <!-- Badges topo -->
+            <div class="flex items-center gap-2 mb-4 flex-wrap">
+                <span class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#dbeafe; color:#0b438a;">
+                    <i class="fa-solid ${catIcon} text-[10px]"></i>
+                    ${d.categoria}
+                </span>
+                <span class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${st.cls}">
+                    <i class="fa-solid ${st.icon} text-[10px]"></i>
+                    ${d.status}
+                </span>
+            </div>
+
+            <!-- Título -->
+            <h2 class="text-xl font-extrabold leading-tight mb-4" style="color:#1e2d5a;">${d.titulo}</h2>
+
+            <!-- Divider -->
+            <div class="h-px mb-4" style="background:#f1f5f9;"></div>
+
+            <!-- Descrição -->
+            <div class="mb-5">
+                <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#94a3b8;">Descrição</p>
+                <p class="text-sm text-gray-600 leading-relaxed">${d.descricao}</p>
+            </div>
+
+            <!-- Divider -->
+            <div class="h-px mb-4" style="background:#f1f5f9;"></div>
+
+            <!-- Infos em grid -->
+            <div class="grid grid-cols-2 gap-3 mb-5">
+
+                <!-- Autor -->
+                <div class="rounded-2xl p-3" style="background:#f8fafc;">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#94a3b8;">Reportado por</p>
+                    ${autorHtml}
+                </div>
+
+                <!-- Data -->
+                <div class="rounded-2xl p-3" style="background:#f8fafc;">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#94a3b8;">Data</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#dbeafe;">
+                            <i class="fa-regular fa-calendar text-sm" style="color:#0b438a;"></i>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700">${d.data}</span>
+                    </div>
+                </div>
+
+                <!-- ID -->
+                <div class="rounded-2xl p-3" style="background:#f8fafc;">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#94a3b8;">Protocolo</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#dbeafe;">
+                            <i class="fa-solid fa-hashtag text-sm" style="color:#0b438a;"></i>
+                        </div>
+                        <span class="text-sm font-bold" style="color:#0b438a;">${String(d.id).padStart(5,'0')}</span>
+                    </div>
+                </div>
+
+                <!-- Ups -->
+                <div class="rounded-2xl p-3" style="background:#f8fafc;">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#94a3b8;">Apoios</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:#dbeafe;">
+                            <i class="fa-solid fa-arrow-up text-sm" style="color:#0b438a;"></i>
+                        </div>
+                        <span class="modal-ups-count text-sm font-bold text-gray-700">${d.ups} up${d.ups !== 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Localização -->
+            <div class="rounded-2xl p-4 mb-5" style="background:#f8fafc;">
+                <p class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color:#94a3b8;">Localização</p>
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#dbeafe;">
+                        <i class="fa-solid fa-location-dot text-sm" style="color:#0b438a;"></i>
+                    </div>
+                    <p id="modal-endereco-${d.id}" class="text-sm text-gray-600 leading-relaxed">
+                        <span class="text-gray-400 italic">Carregando endereço...</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="h-px mb-5" style="background:#f1f5f9;"></div>
+
+            <!-- Botão Up -->
+            <button
+                id="btn-up-modal-${d.id}"
+                onclick="darUp2(${d.id}, this)"
+                class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold transition"
+                style="${upStyle}">
+                <i class="fa-solid fa-arrow-up"></i>
+                <span class="ups-count">${d.ups === 1 ? '1 up' : d.ups + ' ups'} — Apoiar esta denúncia</span>
+            </button>
+
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Busca endereço de forma assíncrona
+    geocodeReverso(d.lat, d.lng).then(endereco => {
+        const el = document.getElementById(`modal-endereco-${d.id}`);
+        if (el) el.textContent = endereco;
+    });
+}
+
+function fecharModal(e) {
+    document.getElementById('card-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+function fecharModalBtn() {
+    document.getElementById('card-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function darUp(btn) {
+    const id    = btn.dataset.id;
+    const ativo = btn.dataset.ativo === 'true';
+    let ups     = parseInt(btn.dataset.ups);
+
+    fetch(`/up/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => {
+            if (!r.ok) { window.location = '/login'; return; }
+            const novoAtivo = !ativo;
+            ups = novoAtivo ? ups + 1 : ups - 1;
+            btn.dataset.ativo = novoAtivo;
+            btn.dataset.ups   = ups;
+            btn.querySelector('.ups-count').innerText = ups === 1 ? '1 up' : `${ups} ups`;
+            if (novoAtivo) {
+                btn.style.background = '#0b438a';
+                btn.style.color = '#fff';
+                btn.style.border = 'none';
+            } else {
+                btn.style.background = '';
+                btn.style.color = '#0b438a';
+                btn.style.border = '1.5px solid #0b438a';
+            }
+            const d = DENUNCIAS.find(x => x.id == id);
+            if (d) { d.ups = ups; d.upAtivo = novoAtivo; }
+        })
+        .catch(() => window.location = '/login');
+}
+
+function darUp2(id, btn) {
+    fetch(`/up/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => {
+            if (!r.ok) { window.location = '/login'; return; }
+            const d = DENUNCIAS.find(x => x.id === id);
+            d.upAtivo = !d.upAtivo;
+            d.ups = d.upAtivo ? d.ups + 1 : d.ups - 1;
+            btn.querySelector('.ups-count').innerText = d.ups === 1 ? '1 up' : `${d.ups} ups`;
+            if (d.upAtivo) {
+                btn.style.background = '#0b438a'; btn.style.color = '#fff'; btn.style.border = 'none';
+            } else {
+                btn.style.background = ''; btn.style.color = '#0b438a'; btn.style.border = '1.5px solid #0b438a';
+            }
+        })
+        .catch(() => window.location = '/login');
+}
+
+// Esconde label do botão flutuante ao rolar
+let ultimoScroll = 0;
+window.addEventListener('scroll', () => {
+    const atual = window.scrollY;
+    const label = document.getElementById('label-flutuante');
+    if (label) {
+        if (atual > ultimoScroll && atual > 100) label.classList.add('hidden');
+        else label.classList.remove('hidden');
+    }
+    ultimoScroll = atual;
+});
+</script>
+
+<!-- Botão flutuante -->
 <a href="/denuncia" id="btn-flutuante"
    class="fixed bottom-6 right-6 flex items-center gap-2 text-white font-bold px-5 py-3 rounded-full shadow-lg transition-all duration-300 z-40"
    style="background:#0b438a;">
@@ -132,50 +422,3 @@
 </a>
 
 {% endblock %}
-
-{% block scripts %}
-<script>
-    function darUp(btn) {
-        const id    = btn.dataset.id;
-        const ativo = btn.dataset.ativo === 'true';
-        let ups     = parseInt(btn.dataset.ups);
-
-        fetch(`/up/${id}`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(r => {
-                if (!r.ok) { window.location = '/login'; return; }
-
-                // Alterna estado visual
-                const novoAtivo = !ativo;
-                ups = novoAtivo ? ups + 1 : ups - 1;
-                btn.dataset.ativo = novoAtivo;
-                btn.dataset.ups   = ups;
-
-                const label = ups === 1 ? '1 up' : `${ups} ups`;
-                btn.querySelector('.ups-count').innerText = label;
-
-                if (novoAtivo) {
-                    btn.style.background   = '#0b438a';
-                    btn.style.color        = '#fff';
-                    btn.style.border       = 'none';
-                } else {
-                    btn.style.background   = '';
-                    btn.style.color        = '#0b438a';
-                    btn.style.border       = '1.5px solid #0b438a';
-                }
-            })
-            .catch(() => window.location = '/login');
-    }
-
-    // Esconde o label ao rolar, mostra só o ícone
-    let ultimoScroll = 0;
-    window.addEventListener('scroll', () => {
-        const atual = window.scrollY;
-        const label = document.getElementById('label-flutuante');
-        if (atual > ultimoScroll && atual > 100) {
-            label.classList.add('hidden');
-        } else {
-            label.classList.remove('hidden');
-        }
-        ultimoScroll = atual;
-    });
-</script>{% endblock %}
