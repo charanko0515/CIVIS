@@ -17,16 +17,17 @@ def buscar_feed_dados(usuario_id):
     conexao = conectar()
     cursor = conexao.cursor()
 
-    # COUNT(*) em vez de COUNT(u.id) — ups não tem coluna id
     cursor.execute("""
-        SELECT d.id, d.categoria, d.descricao, d.latitude, d.longitude,
-               d.foto_caminho, d.data_registro, COUNT(u.denuncia_id) as total_ups
+        SELECT d.id, d.titulo, d.categoria, d.descricao, d.latitude, d.longitude,
+               d.foto_caminho, d.data_registro, d.status, d.anonimo,
+               u.nome, COUNT(up.denuncia_id) as total_ups
         FROM denuncias d
-        LEFT JOIN ups u ON u.denuncia_id = d.id
+        LEFT JOIN usuario u ON u.id = d.usuario_id
+        LEFT JOIN ups up ON up.denuncia_id = d.id
         GROUP BY d.id
         ORDER BY total_ups DESC, d.data_registro DESC
     """)
-    colunas = ['id','categoria','descricao','latitude','longitude','foto_caminho','data_registro','total_ups']
+    colunas = ['id','titulo','categoria','descricao','latitude','longitude','foto_caminho','data_registro','status','anonimo','nome_usuario','total_ups']
     denuncias = [dict(zip(colunas, row)) for row in cursor.fetchall()]
 
     cursor.execute("SELECT denuncia_id FROM ups WHERE usuario_id = ?", (usuario_id,))
@@ -42,16 +43,16 @@ def buscar_perfil_dados(usuario_id):
 
     cursor.execute("SELECT * FROM usuario WHERE id = ?", (usuario_id,))
     colunas_u = ['id','cpf','nome','email','senha','data_criacao']
-    usuario = dict(zip(colunas_u, cursor.fetchone()))
+    row = cursor.fetchone()
+    usuario = dict(zip(colunas_u, row)) if row else None
 
-    # Filtra só as denúncias do usuário logado
     cursor.execute("""
-        SELECT id, categoria, descricao, latitude, longitude, foto_caminho, data_registro
+        SELECT id, titulo, categoria, descricao, latitude, longitude, foto_caminho, data_registro, status, anonimo
         FROM denuncias
         WHERE usuario_id = ?
         ORDER BY data_registro DESC
     """, (usuario_id,))
-    colunas_d = ['id','categoria','descricao','latitude','longitude','foto_caminho','data_registro']
+    colunas_d = ['id','titulo','categoria','descricao','latitude','longitude','foto_caminho','data_registro','status','anonimo']
     denuncias = [dict(zip(colunas_d, row)) for row in cursor.fetchall()]
 
     conexao.close()
@@ -75,13 +76,13 @@ def verificar_login(cpf, senha):
     return usuario
 
 
-def inserir_denuncia(categoria, descricao, latitude, longitude, foto_caminho, usuario_id=None):
+def inserir_denuncia(titulo, categoria, descricao, latitude, longitude, foto_caminho, anonimo=0, usuario_id=None):
     conexao = conectar()
     cursor = conexao.cursor()
     cursor.execute("""
-        INSERT INTO denuncias (categoria, descricao, latitude, longitude, foto_caminho, usuario_id)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (categoria, descricao, latitude, longitude, foto_caminho, usuario_id))
+        INSERT INTO denuncias (titulo, categoria, descricao, latitude, longitude, foto_caminho, anonimo, status, usuario_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'Aberta', ?)
+    """, (titulo, categoria, descricao, latitude, longitude, foto_caminho, anonimo, usuario_id))
     protocolo = cursor.lastrowid
     conexao.commit()
     conexao.close()

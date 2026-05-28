@@ -57,6 +57,9 @@ def perfil():
         return redirect('/login')
         
     usuario, denuncias = db.buscar_perfil_dados(sessao['usuario_id'])
+    if not usuario:
+        sessao.clear()
+        return redirect('/login')
     return render_template('perfil.html', usuario=usuario, denuncias=denuncias)
 
 
@@ -95,11 +98,13 @@ def fazer_login():
 # =========================
 @app.route('/receber_denuncia', methods=['POST'])
 def receber_denuncia():
+    titulo    = request.form.get('titulo')
     categoria = request.form.get('categoria')
     descricao = request.form.get('descricao')
     latitude  = request.form.get('latitude')
     longitude = request.form.get('longitude')
     foto      = request.files.get('foto')
+    anonimo   = 1 if request.form.get('anonimo') == 'on' else 0
     
     foto_caminho_salvar = os.path.join(UPLOAD_FOLDER, foto.filename)
     foto.save(foto_caminho_salvar)
@@ -107,10 +112,10 @@ def receber_denuncia():
     caminho_banco = f'static/uploads/{foto.filename}'
     
     # Salva no banco e pega o ID gerado
-    protocolo = db.inserir_denuncia(categoria, descricao, latitude, longitude, caminho_banco, sessao.get('usuario_id'))
+    protocolo = db.inserir_denuncia(titulo, categoria, descricao, latitude, longitude, caminho_banco, anonimo, sessao.get('usuario_id'))
     
     return render_template('confirmacao.html',
-        protocolo=protocolo, categoria=categoria,
+        protocolo=protocolo, titulo=titulo, categoria=categoria,
         latitude=latitude, longitude=longitude,
         data=datetime.now().strftime('%d/%m/%Y %H:%M')
     )

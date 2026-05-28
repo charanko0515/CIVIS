@@ -20,21 +20,28 @@ para o programa **Do Piauí para o Mundo 2026**.
 
 ## O que é
 
-O CIVIS é uma plataforma web que permite a moradores de bairros periféricos registrar ocorrências urbanas (buracos, falta de iluminação, esgoto, lixo) com foto e geolocalização. As denúncias são transformadas em dados estratégicos para gestores públicos, com mapa interativo por região e número de protocolo para acompanhamento.
+O CIVIS é uma plataforma web que conecta cidadãos e gestores públicos. Moradores de bairros periféricos podem registrar ocorrências urbanas com foto e geolocalização, de forma anônima ou identificada. As denúncias viram dados estratégicos para a gestão pública, com mapa interativo, número de protocolo e sistema de ups para priorização por impacto social.
 
 ---
 
 ## Funcionalidades
 
-- Registro de ocorrências com categoria, descrição, foto e localização
-- 3 formas de selecionar o local: GPS automático, busca por endereço (Nominatim) ou clique no mapa
-- Mapa Leaflet interativo limitado ao Brasil exibindo ocorrências do banco em tempo real
-- Geração de protocolo digital após envio da denúncia
-- Página de confirmação com dados da ocorrência registrada
-- Cadastro e login de usuários com CPF, e-mail e senha
-- Interface responsiva com herança de templates via Jinja2 (`base.html`)
-- Seção informativa com curva SVG e estatísticas do projeto
-- Validação no frontend bloqueando envio sem localização selecionada
+- Landing page com apresentação do projeto e metas esperadas
+- Denúncia anônima sem necessidade de cadastro
+- Registro de ocorrências com título, categoria, descrição, foto e localização
+- Opção de envio anônimo ou identificado
+- Preview de fotos antes do envio
+- 3 formas de selecionar o local: GPS, busca por endereço ou clique no mapa
+- Mapa Leaflet interativo limitado ao Brasil
+- Geração de protocolo com status "Aberta" após envio
+- Cadastro e login de usuários com CPF e senha
+- Feed com saudação ao usuário, rolagem vertical e imagens estilo Instagram
+- Sistema de ups com toggle sem recarregar a página (fetch assíncrono)
+- Perfil com dados do usuário e histórico de denúncias próprias
+- Menu hambúrguer com sidebar em todas as telas
+- Header fixo (sticky) que acompanha o scroll
+- Botão flutuante "Nova denúncia" que se adapta ao scroll
+- Migrações automáticas no banco sem perda de dados
 
 ---
 
@@ -42,15 +49,10 @@ O CIVIS é uma plataforma web que permite a moradores de bairros periféricos re
 
 | Tecnologia | Uso |
 |---|---|
-| Python + Flask | Backend e rotas da aplicação |
-| SQLite | Banco de dados local |
-| Jinja2 | Templates HTML com herança (`base.html`) |
-| Tailwind CSS | Estilização via CDN |
-| Leaflet.js | Mapa interativo |
-| OpenStreetMap | Tiles do mapa (gratuito, sem chave de API) |
-| Nominatim API | Busca de endereços por texto |
-| Font Awesome 6 | Ícones da interface |
-| Plus Jakarta Sans | Tipografia principal (Google Fonts) |
+| Backend, rotas e templates | Python + Flask + Jinja2 |
+| Banco de dados | SQLite |
+| Estilização e ícones | Tailwind CSS + Font Awesome |
+| Mapa interativo e geolocalização | Leaflet + OpenStreetMap |
 
 ---
 
@@ -59,16 +61,19 @@ O CIVIS é uma plataforma web que permite a moradores de bairros periféricos re
 ```
 CIVIS/
 ├── app.py                  # Rotas Flask
-├── database.py             # Criação das tabelas SQLite
-├── database.db             # Banco de dados gerado
+├── adm_db.py               # Funções do banco de dados
+├── database.py             # Criação e migração das tabelas
 ├── static/
-│   ├── prototiple.png      # Imagem de referência do protótipo
+│   ├── icons/              # Ícones do upload de foto
 │   └── uploads/            # Fotos enviadas pelos usuários
 └── templates/
-    ├── base.html           # Template base (header, breadcrumb, footer)
-    ├── homepage.html       # Formulário de denúncia + mapa + seção informativa
-    ├── login.html          # Página de login por CPF e senha
-    ├── cadastro.html       # Página de cadastro de usuário
+    ├── base.html           # Template base (header, sidebar, footer)
+    ├── landing.html        # Página inicial com apresentação do projeto
+    ├── Denuncia.html       # Formulário de denúncia + mapa
+    ├── feed.html           # Feed de ocorrências com ups
+    ├── perfil.html         # Perfil e histórico do usuário
+    ├── login.html          # Login por CPF e senha
+    ├── cadastro.html       # Cadastro de usuário
     └── confirmacao.html    # Confirmação com número de protocolo
 ```
 
@@ -76,28 +81,41 @@ CIVIS/
 
 ## Banco de dados
 
-**Tabela `denuncias`**
-
-| Campo | Tipo | Descrição |
-|---|---|---|
-| id | INTEGER | Protocolo gerado automaticamente |
-| categoria | TEXT NOT NULL | Tipo de ocorrência |
-| latitude | REAL NOT NULL | Coordenada geográfica |
-| longitude | REAL NOT NULL | Coordenada geográfica |
-| foto_caminho | TEXT NOT NULL | Caminho do arquivo salvo |
-| descriacao | TEXT NOT NULL | Descrição da ocorrência |
-| data_registro | DATETIME | Data/hora do registro (automática) |
-
 **Tabela `usuario`**
 
 | Campo | Tipo | Descrição |
 |---|---|---|
 | id | INTEGER | Chave primária |
-| cpf | TEXT UNIQUE NOT NULL | CPF único do usuário |
-| name | TEXT NOT NULL | Nome completo |
-| email | TEXT UNIQUE NOT NULL | E-mail único |
-| password | TEXT NOT NULL | Senha |
-| data_criação | DATETIME | Data de cadastro (automática) |
+| cpf | TEXT UNIQUE NOT NULL | CPF único |
+| nome | TEXT NOT NULL | Nome completo |
+| email | TEXT NOT NULL | E-mail |
+| senha | TEXT NOT NULL | Senha |
+| data_criacao | DATETIME | Data de cadastro (automática) |
+
+**Tabela `denuncias`**
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Protocolo gerado automaticamente |
+| titulo | TEXT NOT NULL | Título da ocorrência |
+| categoria | TEXT NOT NULL | Tipo de ocorrência |
+| descricao | TEXT | Descrição detalhada |
+| latitude | TEXT | Coordenada geográfica |
+| longitude | TEXT | Coordenada geográfica |
+| foto_caminho | TEXT | Caminho do arquivo salvo |
+| anonimo | INTEGER | 1 = anônimo, 0 = identificado |
+| status | TEXT | Status da denúncia (padrão: "Aberta") |
+| usuario_id | INTEGER | Referência ao usuário (nullable) |
+| data_registro | DATETIME | Data/hora do registro (automática) |
+
+**Tabela `ups`**
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| id | INTEGER | Chave primária |
+| denuncia_id | INTEGER NOT NULL | Referência à denúncia |
+| usuario_id | INTEGER NOT NULL | Referência ao usuário |
+| data_up | DATETIME | Data/hora do up (automática) |
 
 ---
 
@@ -105,12 +123,17 @@ CIVIS/
 
 | Método | Rota | Descrição |
 |---|---|---|
-| GET | `/` | Homepage com formulário e mapa |
+| GET | `/` | Landing page |
+| GET | `/denuncia` | Formulário de denúncia |
+| GET | `/feed` | Feed de ocorrências (requer login) |
+| GET | `/perfil` | Perfil do usuário (requer login) |
 | GET | `/login` | Página de login |
-| POST | `/login` | Valida CPF e senha, redireciona |
+| POST | `/login` | Valida CPF e senha, redireciona para feed |
 | GET | `/cadastro` | Página de cadastro |
 | POST | `/cadastro` | Insere novo usuário no banco |
-| POST | `/receber_denuncia` | Salva foto + denúncia e abre confirmação |
+| POST | `/receber_denuncia` | Salva denúncia e abre confirmação |
+| POST | `/up/<id>` | Toggle de up (retorna JSON sem recarregar) |
+| GET | `/logout` | Encerra sessão e redireciona para `/` |
 
 ---
 
@@ -127,7 +150,7 @@ cd civis
 pip install flask
 ```
 
-**3. Crie o banco de dados**
+**3. Crie/atualize o banco de dados**
 ```bash
 python database.py
 ```
@@ -144,47 +167,13 @@ http://localhost:5000
 
 ---
 
-## Observações importantes
+## Observações
 
-- O GPS só funciona em `localhost` ou em conexões **HTTPS**. Para testar no celular na rede local, use o [ngrok](https://ngrok.com):
-```bash
-ngrok http 5000
-```
-- As fotos enviadas são salvas em `static/uploads/`
-- O banco `database.db` é criado automaticamente ao rodar `database.py`
-- Para reiniciar o banco do zero, delete o `database.db` e rode `database.py` novamente
-- O VS Code pode sublinhar `{{ ocorrencias | tojson | safe }}` como erro de sintaxe — isso é normal, o Jinja2 processa corretamente em tempo de execução
-
----
-
-## Fluxo de uso
-
-```
-Usuário acessa /
-        ↓
-Seleciona categoria, endereço (GPS / busca / clique no mapa), descrição e foto
-        ↓
-Valida localização no frontend (bloqueia envio se vazia)
-        ↓
-POST /receber_denuncia → salva foto em static/uploads/ + insere no banco
-        ↓
-Página confirmacao.html com número do protocolo, categoria, coordenadas e data
-```
-
----
-
-## Histórico de melhorias (sessão atual)
-
-- Criação do `base.html` com herança Jinja2 eliminando repetição entre páginas
-- Adição do mapa Leaflet com tiles OpenStreetMap dentro de mockup de celular
-- Implementação de 3 formas de seleção de localização (GPS, busca, clique)
-- Limitação do mapa ao território brasileiro com `maxBounds`
-- Barra de busca com ícone interno (padrão `search-wrap`)
-- Ocorrências do mapa carregadas dinamicamente do banco de dados
-- Página de confirmação com protocolo gerado pelo `lastrowid`
-- Validação frontend impedindo envio sem localização
-- Seção informativa com curvas SVG e estatísticas abaixo do hero
-- Campo `descriacao` adicionado ao formulário e ao banco
+- O GPS só funciona em `localhost` ou **HTTPS**. Para testar no celular: `ngrok http 5000`
+- Fotos salvas em `static/uploads/`
+- `database.py` faz migrações automáticas — não apaga dados ao rodar novamente
+- Feed e perfil são protegidos — redirecionam para `/login` se não autenticado
+- Up no feed usa `fetch` assíncrono — sem recarregamento de página
 
 ---
 

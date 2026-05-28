@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block titulo %}Início{% endblock %}
+{% block titulo %}Nova Denúncia{% endblock %}
 {% block breadcrumb %}Nova Denúncia{% endblock %}
 {% block main_class %}block{% endblock %}
 
@@ -7,243 +7,564 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-    #mapa { height: 100%; width: 100%; }
-    .input-field { width:100%; padding:10px 14px; border:1.5px solid #dde3f0; border-radius:10px; font-size:14px; color:#1e2d5a; outline:none; transition:border-color .2s; }
-    .input-field:focus { border-color:#0b438a; }
-    .input-field::placeholder { color:#a0aec0; }
-    select.input-field { appearance:none; background:#fff; cursor:pointer; }
-    textarea.input-field { resize:none; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes bounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(6px); } }
-    .fade-up { animation:fadeUp .6s ease both; }
-    .delay-1 { animation-delay:.1s; }
-    .delay-2 { animation-delay:.2s; }
-    .bounce { animation:bounce 1.5s infinite; }
+    .input-field {
+        width: 100%; padding: 9px 13px;
+        border: 1.5px solid #dde3f0; border-radius: 10px;
+        font-size: 13px; color: #1e2d5a; outline: none;
+        transition: border-color .2s, box-shadow .2s;
+        background: #fff;
+    }
+    .input-field:focus { border-color: #0b438a; box-shadow: 0 0 0 3px rgba(11,67,138,.08); }
+    .input-field::placeholder { color: #b0bcd4; }
+    select.input-field { appearance: none; cursor: pointer; }
+    textarea.input-field { resize: none; }
+
+    /* Steps */
+    .step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; transition:.2s; }
+    .step-dot.ativo { background:#0b438a; color:#fff; }
+    .step-dot.inativo { background:#e8eef8; color:#a0aec0; }
+    .step-dot.concluido { background:#22c55e; color:#fff; }
+    .step-linha { flex:1; height:2px; background:#e8eef8; margin:0 6px; border-radius:2px; transition:.3s; }
+    .step-linha.ativa { background:#0b438a; }
+
+    /* Painel de step */
+    .step-painel { display:none; animation: fadeUp .35s ease both; }
+    .step-painel.visivel { display:block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Mapa */
+    #mapa { height: 100%; width: 100%; border-radius: 16px; }
+    .mapa-wrapper { height: 100%; min-height: 480px; border-radius:16px; overflow:hidden; border:1.5px solid #dde3f0; }
+
+    /* Zona de upload compacta */
+    #zona-upload { border:2px dashed #c7d7f0; background:#f8faff; border-radius:12px; padding:16px; cursor:pointer; transition:.2s; }
+    #zona-upload:hover { border-color:#0b438a; background:#eef4ff; }
+
+    /* Toggle anônimo */
+    #toggle-anonimo { border:2px solid #dde3f0; background:#f8faff; border-radius:12px; padding:10px 14px; cursor:pointer; transition:.2s; }
 </style>
 {% endblock %}
 
 {% block conteudo %}
+<div class="w-full max-w-7xl mx-auto px-4 py-8">
 
-<!-- Hero -->
-<div class="w-full max-w-6xl mx-auto px-6 py-10">
-    <div class="flex flex-col lg:flex-row items-center gap-10">
+    <!-- Cabeçalho -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-extrabold" style="color:#0b438a;">Nova Denúncia</h1>
+        <p class="text-sm text-gray-400 mt-1">Preencha os dados e marque o local no mapa</p>
+    </div>
 
-        <!-- Formulário -->
-        <div class="w-full lg:w-1/2 fade-up flex justify-center">
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 w-full max-w-md">
+    <div class="flex flex-col lg:flex-row gap-6" style="align-items:stretch;">
 
-                <h2 class="text-2xl font-extrabold mb-1" style="color:#0b438a">Dados da Denúncia</h2>
-                <p class="text-xs text-gray-400 mb-6">Preencha para registrar uma ocorrência</p>
+        <!-- ═══ COLUNA ESQUERDA: Formulário ═══ -->
+        <div class="w-full lg:w-5/12 flex flex-col">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-5 h-full">
 
-                <form action="/receber_denuncia" method="POST" enctype="multipart/form-data" class="space-y-5">
+                <!-- Indicador de steps -->
+                <div class="flex items-center mb-1">
+                    <div class="step-dot ativo" id="dot-1">1</div>
+                    <div class="step-linha" id="linha-1"></div>
+                    <div class="step-dot inativo" id="dot-2">2</div>
+                    <div class="step-linha" id="linha-2"></div>
+                    <div class="step-dot inativo" id="dot-3">3</div>
+                </div>
+                <div class="flex justify-between text-[10px] font-semibold text-gray-400 -mt-3 px-0.5">
+                    <span>Identificação</span>
+                    <span class="text-center">Localização</span>
+                    <span class="text-right">Detalhes</span>
+                </div>
+
+                <form action="/receber_denuncia" method="POST" enctype="multipart/form-data" id="form-denuncia">
                     <input type="hidden" id="lat" name="latitude">
                     <input type="hidden" id="lng" name="longitude">
 
-                    <div>
-                        <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a">Categoria</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-list absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                            <select name="categoria" required class="input-field pl-9">
-                                <option value="">Selecione uma categoria</option>
-                                <option value="Iluminação">💡 Iluminação Pública</option>
-                                <option value="Saneamento">🚧 Esgoto / Saneamento</option>
-                                <option value="Vias">🕳️ Buraco na Via</option>
-                                <option value="Lixo">🗑️ Acúmulo de Lixo</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
-                        </div>
-                    </div>
+                    <!-- ── STEP 1: Identificação ── -->
+                    <div class="step-painel visivel" id="step-1">
+                        <div class="flex flex-col gap-4">
 
-                    <div>
-                        <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a">Local da ocorrência</label>
-                        <div style="position:relative;">
-                            <input type="text" id="busca-endereco" class="input-field" placeholder="ex: Rua das Flores, Teresina…"
-                                   style="padding-right:38px;">
-                            <button type="button" onclick="buscarEndereco()"
-                                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#a0aec0;font-size:1rem;padding:0;transition:color .2s;"
-                                onmouseover="this.style.color='#0b438a'" onmouseout="this.style.color='#a0aec0'">
-                                <i class="fa-solid fa-magnifying-glass"></i>
+                            <!-- Título -->
+                            <div>
+                                <label class="block text-xs font-bold mb-1.5 uppercase tracking-wide" style="color:#6b7280;">Título</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-pen absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                                    <input type="text" name="titulo" id="titulo" required class="input-field pl-8" placeholder="Ex: Buraco perigoso na Av. Principal">
+                                </div>
+                            </div>
+
+                            <!-- Categoria — chips visuais -->
+                            <div>
+                                <label class="block text-xs font-bold mb-2 uppercase tracking-wide" style="color:#6b7280;">Categoria</label>
+                                <input type="hidden" name="categoria" id="categoria-valor" required>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" onclick="selecionarCategoria(this,'Iluminação')"
+                                        class="chip-cat flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-500 hover:border-blue-300 transition">
+                                        <span class="text-base">💡</span> Iluminação
+                                    </button>
+                                    <button type="button" onclick="selecionarCategoria(this,'Saneamento')"
+                                        class="chip-cat flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-500 hover:border-blue-300 transition">
+                                        <span class="text-base">🚧</span> Saneamento
+                                    </button>
+                                    <button type="button" onclick="selecionarCategoria(this,'Vias')"
+                                        class="chip-cat flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-500 hover:border-blue-300 transition">
+                                        <span class="text-base">🕳️</span> Buraco na Via
+                                    </button>
+                                    <button type="button" onclick="selecionarCategoria(this,'Lixo')"
+                                        class="chip-cat flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-500 hover:border-blue-300 transition">
+                                        <span class="text-base">🗑️</span> Acúmulo de Lixo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="irStep(2)"
+                                class="w-full text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition mt-2"
+                                style="background:#0b438a;">
+                                Próximo <i class="fa-solid fa-arrow-right text-xs"></i>
                             </button>
                         </div>
-                        <button type="button" onclick="usarGPS()"
-                            style="border:1.5px solid #0b438a; color:#0b438a;"
-                            class="mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold hover:bg-blue-50 transition">
-                            <i class="fa-solid fa-location-crosshairs"></i> Usar minha localização
-                        </button>
                     </div>
 
-                    <div id="status-gps" class="text-xs font-medium text-center bg-amber-50 text-amber-600 p-2 rounded-xl border border-amber-200">
-                        📡 Clique no mapa, busque um endereço ou use o GPS
-                    </div>
+                    <!-- ── STEP 2: Localização ── -->
+                    <div class="step-painel" id="step-2">
+                        <div class="flex flex-col gap-4">
 
-                    <!-- Upload com preview -->
-                    <div>
-                        <label class="block text-sm font-semibold mb-2" style="color:#1e2d5a">Imagem da ocorrência</label>
+                            <div>
+                                <label class="block text-xs font-bold mb-1.5 uppercase tracking-wide" style="color:#6b7280;">Endereço</label>
+                                <div class="relative">
+                                    <div class="flex gap-2">
+                                        <div class="relative flex-1">
+                                            <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                                            <input type="text" id="busca-endereco" class="input-field pl-8" placeholder="Rua das Flores, Teresina…" autocomplete="off">
+                                        </div>
+                                        <button type="button" onclick="buscarEndereco()"
+                                            class="px-3 py-2 rounded-xl font-bold text-white text-sm flex items-center gap-1.5 hover:opacity-90 transition flex-shrink-0"
+                                            style="background:#0b438a;">
+                                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Dropdown autocomplete -->
+                                    <ul id="autocomplete-lista" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden" style="max-height:200px;overflow-y:auto;"></ul>
+                                </div>
+                            </div>
 
-                        <!-- Zona de drop / clique principal -->
-                        <label id="zona-upload" class="flex flex-col items-center justify-center gap-2 w-full rounded-xl cursor-pointer transition-all duration-200"
-                               style="border:2px dashed #c7d7f0; background:#f8faff; padding:20px;">
-                            <img id="icone-camera" src="{{ url_for('static', filename='icons/e3faa16e-f138-4f9a-b89e-425379250474.png') }}" class="w-14 h-14 object-contain">
-                            <span class="text-xs font-medium" style="color:#0b438a;">Clique para adicionar foto</span>
-                            <input type="file" name="foto" id="input-foto" accept="image/*" capture="environment" class="hidden" multiple>
-                        </label>
+                            <button type="button" onclick="usarGPS()"
+                                class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition"
+                                style="border:1.5px solid #0b438a; color:#0b438a;">
+                                <i class="fa-solid fa-location-crosshairs"></i> Usar minha localização
+                            </button>
 
-                        <!-- Grid de previews (aparece após selecionar) -->
-                        <div id="preview-grid" class="hidden mt-3 grid grid-cols-3 gap-2">
+                            <div id="status-gps" class="text-xs font-medium text-center bg-amber-50 text-amber-600 p-2.5 rounded-xl border border-amber-200">
+                                📡 Clique no mapa, busque um endereço ou use o GPS
+                            </div>
+
+                            <div class="flex gap-3 mt-1">
+                                <button type="button" onclick="irStep(1)"
+                                    class="flex-1 py-2.5 rounded-xl font-bold text-sm transition"
+                                    style="border:1.5px solid #dde3f0; color:#6b7280;">
+                                    <i class="fa-solid fa-arrow-left text-xs"></i> Voltar
+                                </button>
+                                <button type="button" onclick="avancarStep2()"
+                                    class="flex-1 text-white font-bold py-2.5 rounded-xl text-sm hover:opacity-90 transition"
+                                    style="background:#0b438a;">
+                                    Próximo <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </button>
+                            </div>
                         </div>
-
-                        <!-- Botão de adicionar mais (aparece após 1ª foto) -->
-                        <label id="btn-mais-fotos" class="hidden mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl cursor-pointer text-xs font-semibold transition hover:opacity-80"
-                               style="border:1.5px dashed #0b438a; color:#0b438a; background:#f0f6ff;">
-                            <i class="fa-solid fa-plus"></i> Adicionar mais fotos
-                            <input type="file" name="foto_extra" accept="image/*" class="hidden" multiple>
-                        </label>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold mb-1" style="color:#1e2d5a">Descrição</label>
-                        <textarea name="descricao" rows="4" class="input-field" placeholder="Descreva os detalhes da ocorrência..."></textarea>
+                    <!-- ── STEP 3: Detalhes ── -->
+                    <div class="step-painel" id="step-3">
+                        <div class="flex flex-col gap-4">
+
+                            <!-- Upload compacto -->
+                            <div>
+                                <label class="block text-xs font-bold mb-1.5 uppercase tracking-wide" style="color:#6b7280;">Foto da ocorrência</label>
+                                <label id="zona-upload" class="flex items-center gap-3 w-full">
+                                    <i class="fa-solid fa-camera text-2xl" style="color:#0b438a;"></i>
+                                    <div>
+                                        <p class="text-sm font-bold" style="color:#0b438a;">Adicionar foto</p>
+                                        <p class="text-xs text-gray-400">Clique para selecionar</p>
+                                    </div>
+                                    <input type="file" name="foto" id="input-foto" accept="image/*" capture="environment" class="hidden" multiple>
+                                </label>
+                                <div id="preview-grid" class="hidden mt-3 grid grid-cols-3 gap-2"></div>
+                                <label id="btn-mais-fotos" class="hidden mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl cursor-pointer text-xs font-semibold transition hover:opacity-80"
+                                       style="border:1.5px dashed #0b438a; color:#0b438a; background:#f0f6ff;">
+                                    <i class="fa-solid fa-plus"></i> Mais fotos
+                                    <input type="file" name="foto_extra" accept="image/*" class="hidden" multiple>
+                                </label>
+                            </div>
+
+                            <!-- Descrição -->
+                            <div>
+                                <label class="block text-xs font-bold mb-1.5 uppercase tracking-wide" style="color:#6b7280;">Descrição</label>
+                                <textarea name="descricao" rows="3" class="input-field" placeholder="Descreva os detalhes da ocorrência..."></textarea>
+                            </div>
+
+                            <!-- Toggle anônimo -->
+                            <label id="toggle-anonimo" class="flex items-center gap-3 select-none">
+                                <div class="relative flex-shrink-0">
+                                    <input type="checkbox" name="anonimo" id="check-anonimo" class="sr-only" onchange="atualizarAnonimo(this)">
+                                    <div id="track-anonimo" class="w-10 h-5 rounded-full transition-colors duration-200" style="background:#dde3f0;"></div>
+                                    <div id="thumb-anonimo" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold" id="label-anonimo" style="color:#1e2d5a;">Enviar como anônimo</p>
+                                    <p class="text-xs text-gray-400" id="sub-anonimo">Seu nome não aparecerá na publicação</p>
+                                </div>
+                                <i class="fa-solid fa-user-secret" id="icone-anonimo" style="color:#a0aec0;"></i>
+                            </label>
+
+                            <div class="flex gap-3 mt-1">
+                                <button type="button" onclick="irStep(2)"
+                                    class="flex-1 py-2.5 rounded-xl font-bold text-sm transition"
+                                    style="border:1.5px solid #dde3f0; color:#6b7280;">
+                                    <i class="fa-solid fa-arrow-left text-xs"></i> Voltar
+                                </button>
+                                <button type="submit"
+                                    class="flex-1 text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 hover:opacity-90 transition"
+                                    style="background:#0b438a;">
+                                    <i class="fa-solid fa-paper-plane text-xs"></i> Enviar
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <button type="submit"
-                        style="background:#0b438a;"
-                        class="w-full text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition">
-                        <i class="fa-solid fa-paper-plane"></i> Enviar denúncia
-                    </button>
                 </form>
             </div>
         </div>
 
-        <!-- Mockup celular -->
- <div class="w-full lg:w-1/2 hidden lg:flex justify-center fade-up delay-1">
-    <div style="position:relative;width:min(340px,85vw);height:min(760px,90vh);background:linear-gradient(160deg,#2a2a3d,#1a1a2e);border-radius:46px;padding:14px;box-shadow:0 0 0 2px #3a3a5c,0 40px 80px rgba(0,0,0,.5);">
-        <div style="position:absolute;left:-3px;top:105px;width:3px;height:34px;background:#3a3a5c;border-radius:2px 0 0 2px"></div>
-        <div style="position:absolute;left:-3px;top:148px;width:3px;height:34px;background:#3a3a5c;border-radius:2px 0 0 2px"></div>
-        <div style="position:absolute;right:-3px;top:125px;width:3px;height:54px;background:#3a3a5c;border-radius:0 2px 2px 0"></div>
+        <!-- ═══ COLUNA DIREITA: Mockup tablet horizontal com mapa ═══ -->
+        <div class="w-full lg:w-7/12 hidden lg:flex flex-col items-center justify-center">
 
-        <div style="width:100%;height:100%;background:#f0f4ff;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;">
-            
-            <div style="background:#0b438a;padding:9px 18px 7px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-                <span id="relogio" style="color:#fff;font-size:12px;font-weight:700;">00:00</span>
+            <!-- Tablet wrapper -->
+            <div style="
+                position: relative;
+                width: min(660px, 95%);
+                height: min(480px, 72vh);
+                background: linear-gradient(145deg, #2c2c3e, #1a1a2e);
+                border-radius: 28px;
+                padding: 16px 18px;
+                box-shadow: 0 0 0 2px #3a3a5c, 0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+            ">
+                <!-- Câmera frontal (tablet landscape: topo centralizado) -->
+                <div style="position:absolute;top:7px;left:50%;transform:translateX(-50%);width:7px;height:7px;background:#3a3a5c;border-radius:50%;box-shadow:inset 0 0 0 1.5px #555;"></div>
 
-                <div style="display:flex;align-items:center;gap:5px;">
-                    <i class="fa-solid fa-signal" style="color:#fff;font-size:10px;"></i>
-                    <i class="fa-solid fa-wifi" style="color:#fff;font-size:10px;"></i>
-                    <i class="fa-solid fa-battery-full" style="color:#fff;font-size:10px;"></i>
+                <!-- Botão lateral direito (power) -->
+                <div style="position:absolute;right:-3px;top:90px;width:3px;height:40px;background:#3a3a5c;border-radius:0 2px 2px 0;"></div>
+
+                <!-- Botões laterais esquerdos (volume) -->
+                <div style="position:absolute;left:-3px;top:80px;width:3px;height:28px;background:#3a3a5c;border-radius:2px 0 0 2px;"></div>
+                <div style="position:absolute;left:-3px;top:118px;width:3px;height:28px;background:#3a3a5c;border-radius:2px 0 0 2px;"></div>
+
+                <!-- Tela interna -->
+                <div style="width:100%;height:100%;background:#f0f4ff;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
+
+                    <!-- Barra de status do tablet -->
+                    <div style="background:#0b438a;padding:7px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <i class="fa-solid fa-location-dot" style="color:#fff;font-size:13px;"></i>
+                            <span style="color:#fff;font-size:13px;font-weight:800;letter-spacing:1.5px;">CIVIS</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:3px;">
+                            <span id="relogio" style="color:#fff;font-size:11px;font-weight:700;margin-right:8px;">00:00</span>
+                            <i class="fa-solid fa-signal" style="color:#fff;font-size:10px;"></i>
+                            <i class="fa-solid fa-wifi" style="color:rgba(255,255,255,.8);font-size:10px;margin-left:4px;"></i>
+                            <i class="fa-solid fa-battery-three-quarters" style="color:#fff;font-size:10px;margin-left:4px;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Barra de busca do tablet -->
+                    <div style="background:#fff;padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8eef8;flex-shrink:0;">
+                        <i class="fa-solid fa-bars" style="color:#0b438a;font-size:13px;"></i>
+                        <span style="flex-grow:1;font-size:12px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="preview-endereco">Marque o local da ocorrência no mapa…</span>
+                        <i class="fa-solid fa-magnifying-glass" style="color:#0b438a;font-size:12px;"></i>
+                    </div>
+
+                    <!-- Mapa ocupa o restante da tela do tablet -->
+                    <div id="mapa" style="flex-grow:1;"></div>
+
                 </div>
             </div>
 
-            <div style="background:#0b438a;padding:7px 14px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;">
-                <i class="fa-solid fa-location-dot" style="color:#fff;font-size:14px;"></i>
-                <span style="color:#fff;font-size:14px;font-weight:800;letter-spacing:1.5px;">CIVIS</span>
-            </div>
-
-            <div style="background:#fff;padding:8px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #e8eef8;flex-shrink:0;">
-                <i class="fa-solid fa-bars" style="color:#0b438a;font-size:12px;"></i>
-                <span style="flex-grow:1;font-size:11px;color:#a0aec0;">Buscar local</span>
-                <i class="fa-solid fa-magnifying-glass" style="color:#0b438a;font-size:12px;"></i>
-            </div>
-
-            <div id="mapa" style="flex-grow:1;"></div>
+            <p class="text-xs text-gray-400 mt-4 text-center">
+                <i class="fa-solid fa-hand-pointer mr-1"></i> Clique no mapa para marcar o local da ocorrência
+            </p>
         </div>
+
+        <!-- Mapa mobile (fora do mockup, só aparece em telas pequenas) -->
+        <div class="w-full lg:hidden rounded-2xl overflow-hidden border border-gray-200" style="height:260px;">
+            <div id="mapa-mobile"></div>
+        </div>
+
     </div>
 </div>
-
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-    const limitsBrasil = L.latLngBounds(L.latLng(-33.75,-73.99), L.latLng(5.27,-28.84));
-    const mapa = L.map('mapa', { zoomControl:false, attributionControl:false, maxBounds:limitsBrasil, maxBoundsViscosity:1.0, minZoom:4 }).setView([-5.0892,-42.8019], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+// ── Relógio do mockup ──
+function atualizarRelogio() {
+    const a = new Date();
+    document.getElementById('relogio').innerText =
+        String(a.getHours()).padStart(2,'0') + ':' + String(a.getMinutes()).padStart(2,'0');
+}
+atualizarRelogio();
+setInterval(atualizarRelogio, 1000);
 
-    const ocorrencias = JSON.parse('{{ ocorrencias | tojson | safe }}');
-    ocorrencias.forEach(o => L.marker([o.lat, o.lng]).addTo(mapa).bindPopup(`<b>${o.categoria}</b>`));
+// ── Mapas ──
+const limitsBrasil = L.latLngBounds(L.latLng(-33.75,-73.99), L.latLng(5.27,-28.84));
+const opsMapa = { zoomControl:false, attributionControl:false, maxBounds:limitsBrasil, maxBoundsViscosity:1.0, minZoom:4 };
 
-    let marcador = null;
+const mapa = L.map('mapa', opsMapa).setView([-5.0892,-42.8019], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-    function setStatus(msg, tipo) {
-        const cores = { ok:'bg-green-50 text-green-600 border-green-200', erro:'bg-red-50 text-red-600 border-red-200', info:'bg-blue-50 text-blue-600 border-blue-200' };
-        const s = document.getElementById('status-gps');
-        s.innerText = msg;
-        s.className = `text-xs font-medium text-center p-2 rounded-xl border ${cores[tipo]}`;
+// Mapa mobile (telas pequenas)
+let mapaMobile = null;
+const elMobile = document.getElementById('mapa-mobile');
+if (elMobile) {
+    elMobile.style.height = '260px';
+    mapaMobile = L.map('mapa-mobile', { ...opsMapa, zoomControl:true }).setView([-5.0892,-42.8019], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaMobile);
+}
+
+const ocorrencias = JSON.parse('{{ ocorrencias | tojson | safe }}');
+ocorrencias.forEach(o => {
+    L.marker([o.lat, o.lng]).addTo(mapa).bindPopup(`<b>${o.categoria}</b>`);
+    if (mapaMobile) L.marker([o.lat, o.lng]).addTo(mapaMobile).bindPopup(`<b>${o.categoria}</b>`);
+});
+
+let marcador = null, marcadorMobile = null;
+
+function setStatus(msg, tipo) {
+    const cores = { ok:'bg-green-50 text-green-600 border-green-200', erro:'bg-red-50 text-red-600 border-red-200', info:'bg-blue-50 text-blue-600 border-blue-200', aviso:'bg-amber-50 text-amber-600 border-amber-200' };
+    const s = document.getElementById('status-gps');
+    s.innerText = msg;
+    s.className = `text-xs font-medium text-center p-2.5 rounded-xl border ${cores[tipo]}`;
+}
+
+function moverMarcador(lat, lng, label) {
+    document.getElementById('lat').value = lat.toFixed(6);
+    document.getElementById('lng').value = lng.toFixed(6);
+
+    // Mockup
+    marcador ? marcador.setLatLng([lat,lng]).bindPopup(label||'📍').openPopup()
+             : (marcador = L.marker([lat,lng]).addTo(mapa).bindPopup(label||'📍').openPopup());
+
+    // Mobile
+    if (mapaMobile) {
+        marcadorMobile ? marcadorMobile.setLatLng([lat,lng]).bindPopup(label||'📍').openPopup()
+                       : (marcadorMobile = L.marker([lat,lng]).addTo(mapaMobile).bindPopup(label||'📍').openPopup());
+        mapaMobile.setView([lat,lng], 16);
     }
 
-    function moverMarcador(lat, lng, label) {
-        document.getElementById('lat').value = lat.toFixed(6);
-        document.getElementById('lng').value = lng.toFixed(6);
-        marcador ? marcador.setLatLng([lat,lng]).bindPopup(label).openPopup()
-                 : (marcador = L.marker([lat,lng]).addTo(mapa).bindPopup(label).openPopup());
-    }
+    // Atualiza barra decorativa do celular
+    const prev = document.getElementById('preview-endereco');
+    if (prev && label && label !== '📍') prev.innerText = label.replace('📍 ','');
+}
 
-   mapa.on('click', e => {
+function clicarMapa(e) {
     const { lat, lng } = e.latlng;
     moverMarcador(lat, lng, '📍 Local selecionado');
     mapa.setView(e.latlng);
     setStatus('🔍 Buscando endereço...', 'info');
-
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`)
         .then(r => r.json())
         .then(d => {
             const addr = d.address;
-            const rua = addr.road || addr.pedestrian || addr.footway || 'Rua desconhecida';
-            const cidade = addr.city || addr.town || addr.village || addr.municipality || 'Cidade desconhecida';
-            const estado = addr.state || 'Estado desconhecido';
-            const etiqueta = `${rua}, ${cidade} - ${estado}`;
-
-            moverMarcador(lat, lng);
+            const rua    = addr.road || addr.pedestrian || addr.footway || '';
+            const bairro = addr.suburb || addr.neighbourhood || addr.quarter || '';
+            const cidade = addr.city || addr.town || addr.village || addr.municipality || '';
+            const partes = [rua, bairro, cidade].filter(Boolean);
+            const etiqueta = partes.join(', ');
             document.getElementById('busca-endereco').value = etiqueta;
-            setStatus(`📍 Local: ${etiqueta}`, 'ok');
+            const prev = document.getElementById('preview-endereco');
+            if (prev) prev.innerText = etiqueta;
+            setStatus(`📍 ${etiqueta}`, 'ok');
         })
-        .catch(() => {
-            document.getElementById('busca-endereco').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-            setStatus('❌ Erro ao buscar endereço.', 'erro');
+        .catch(() => setStatus('❌ Erro ao buscar endereço.', 'erro'));
+}
+
+mapa.on('click', clicarMapa);
+if (mapaMobile) mapaMobile.on('click', clicarMapa);
+
+// ── Autocomplete com debounce + cache ──
+const cacheEnderecos = {};
+let timerDebounce = null;
+
+function formatarEndereco(addr) {
+    const rua    = addr.road || addr.pedestrian || addr.footway || addr.suburb || '';
+    const bairro = addr.suburb || addr.neighbourhood || addr.quarter || '';
+    const cidade = addr.city || addr.town || addr.village || addr.municipality || '';
+    return [rua, bairro, cidade].filter(Boolean).join(', ');
+}
+
+function fecharAutocomplete() {
+    document.getElementById('autocomplete-lista').classList.add('hidden');
+}
+
+function selecionarSugestao(lat, lng, etiqueta) {
+    mapa.setView([lat, lng], 16);
+    moverMarcador(lat, lng, '📍 Local selecionado');
+    document.getElementById('busca-endereco').value = etiqueta;
+    const prev = document.getElementById('preview-endereco');
+    if (prev) prev.innerText = etiqueta;
+    setStatus(`📍 ${etiqueta}`, 'ok');
+    fecharAutocomplete();
+}
+
+async function buscarSugestoes(termo) {
+    if (cacheEnderecos[termo]) return cacheEnderecos[termo];
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(termo)}&limit=5&countrycodes=br&addressdetails=1`;
+    const r = await fetch(url);
+    const d = await r.json();
+    cacheEnderecos[termo] = d;
+    return d;
+}
+
+function renderizarSugestoes(resultados) {
+    const lista = document.getElementById('autocomplete-lista');
+    lista.innerHTML = '';
+    if (!resultados.length) { lista.classList.add('hidden'); return; }
+    resultados.forEach(item => {
+        const etiqueta = formatarEndereco(item.address);
+        if (!etiqueta) return;
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:bg-blue-50 text-sm text-gray-700 border-b border-gray-100 last:border-0';
+        li.innerHTML = `<i class="fa-solid fa-location-dot text-xs flex-shrink-0" style="color:#0b438a;"></i><span>${etiqueta}</span>`;
+        li.addEventListener('mousedown', e => {
+            e.preventDefault();
+            selecionarSugestao(parseFloat(item.lat), parseFloat(item.lon), etiqueta);
         });
+        lista.appendChild(li);
+    });
+    lista.classList.remove('hidden');
+}
+
+document.getElementById('busca-endereco').addEventListener('input', function () {
+    clearTimeout(timerDebounce);
+    const termo = this.value.trim();
+    if (termo.length < 4) { fecharAutocomplete(); return; }
+    setStatus('🔍 Buscando...', 'info');
+    timerDebounce = setTimeout(async () => {
+        try {
+            const resultados = await buscarSugestoes(termo);
+            renderizarSugestoes(resultados);
+            if (!resultados.length) setStatus('❌ Nenhum resultado.', 'erro');
+            else setStatus('📍 Selecione um resultado abaixo', 'info');
+        } catch { setStatus('❌ Erro na busca.', 'erro'); }
+    }, 400);
 });
 
-    function buscarEndereco() {
-        const termo = document.getElementById('busca-endereco').value.trim();
-        if (!termo) return;
-        setStatus('🔍 Buscando endereço...', 'info');
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(termo)}&limit=1&countrycodes=br`)
-            .then(r => r.json())
-            .then(d => {
-                if (!d.length) return setStatus('❌ Endereço não encontrado.', 'erro');
-                const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
-                mapa.setView([lat,lng], 16);
-                moverMarcador(lat, lng, ` ${d[0].display_name.split(',').slice(0,2).join(',')}`);
-                document.getElementById('busca-endereco').value = d[0].display_name.split(',').slice(0,3).join(',');
-                setStatus(' Endereço encontrado!', 'ok');
-            })
-            .catch(() => setStatus('❌ Erro na busca.', 'erro'));
-    }
+document.getElementById('busca-endereco').addEventListener('blur', () => {
+    setTimeout(fecharAutocomplete, 150);
+});
 
-    document.getElementById('busca-endereco').addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); buscarEndereco(); }
+document.getElementById('busca-endereco').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); buscarEndereco(); }
+});
+
+async function buscarEndereco() {
+    const termo = document.getElementById('busca-endereco').value.trim();
+    if (!termo) return;
+    setStatus('🔍 Buscando...', 'info');
+    fecharAutocomplete();
+    try {
+        const resultados = await buscarSugestoes(termo);
+        if (!resultados.length) return setStatus('❌ Endereço não encontrado.', 'erro');
+        const item = resultados[0];
+        const etiqueta = formatarEndereco(item.address);
+        selecionarSugestao(parseFloat(item.lat), parseFloat(item.lon), etiqueta);
+    } catch { setStatus('❌ Erro na busca.', 'erro'); }
+}
+
+function usarGPS() {
+    setStatus('📡 Buscando GPS...', 'info');
+    navigator.geolocation.getCurrentPosition(
+        p => {
+            const lat = p.coords.latitude, lng = p.coords.longitude;
+            mapa.setView([lat, lng], 16);
+            moverMarcador(lat, lng, '📍 Você está aqui');
+            setStatus('📍 Localização capturada!', 'ok');
+        },
+        () => setStatus('❌ GPS indisponível. Busque ou clique no mapa.', 'erro')
+    );
+}
+
+// ── Steps ──
+let stepAtual = 1;
+
+function irStep(n) {
+    document.getElementById(`step-${stepAtual}`).classList.remove('visivel');
+    stepAtual = n;
+    document.getElementById(`step-${n}`).classList.add('visivel');
+    atualizarDots();
+}
+
+function atualizarDots() {
+    [1,2,3].forEach(i => {
+        const dot   = document.getElementById(`dot-${i}`);
+        const linha = document.getElementById(`linha-${i}`);
+        dot.className = 'step-dot ' + (i < stepAtual ? 'concluido' : i === stepAtual ? 'ativo' : 'inativo');
+        if (linha) linha.className = 'step-linha' + (i < stepAtual ? ' ativa' : '');
     });
+}
 
-    function usarGPS() {
-        setStatus('📡 Buscando GPS...', 'info');
-        navigator.geolocation.getCurrentPosition(
-            p => { mapa.setView([p.coords.latitude,p.coords.longitude],16); moverMarcador(p.coords.latitude,p.coords.longitude,'📍 Você está aqui'); setStatus('📍 Localização capturada!','ok'); },
-            () => setStatus('❌ GPS indisponível. Busque o endereço ou clique no mapa.','erro')
-        );
+function avancarStep2() {
+    if (!document.getElementById('lat').value) {
+        setStatus('⚠️ Marque o local no mapa antes de continuar.', 'aviso');
+        return;
     }
+    irStep(3);
+}
 
-    document.querySelector('form').addEventListener('submit', e => {
-        if (!document.getElementById('lat').value) { e.preventDefault(); setStatus('⚠️ Selecione um local no mapa antes de enviar.','erro'); }
+// ── Categorias (chips) ──
+function selecionarCategoria(btn, valor) {
+    document.querySelectorAll('.chip-cat').forEach(c => {
+        c.style.borderColor = '';
+        c.style.background  = '';
+        c.style.color       = '';
     });
+    btn.style.borderColor = '#0b438a';
+    btn.style.background  = '#eef4ff';
+    btn.style.color       = '#0b438a';
+    document.getElementById('categoria-valor').value = valor;
+}
 
-    function atualizarRelogio() {
-        const a = new Date();
-        document.getElementById('relogio').innerText = String(a.getHours()).padStart(2,'0') + ':' + String(a.getMinutes()).padStart(2,'0');
+// ── Validação no submit ──
+document.getElementById('form-denuncia').addEventListener('submit', e => {
+    if (!document.getElementById('titulo').value.trim()) { e.preventDefault(); irStep(1); return; }
+    if (!document.getElementById('categoria-valor').value) { e.preventDefault(); irStep(1); return; }
+    if (!document.getElementById('lat').value) { e.preventDefault(); irStep(2); setStatus('⚠️ Selecione um local no mapa.', 'aviso'); return; }
+});
+
+// ── Toggle anônimo ──
+function atualizarAnonimo(cb) {
+    const track  = document.getElementById('track-anonimo');
+    const thumb  = document.getElementById('thumb-anonimo');
+    const label  = document.getElementById('label-anonimo');
+    const sub    = document.getElementById('sub-anonimo');
+    const icone  = document.getElementById('icone-anonimo');
+    const toggle = document.getElementById('toggle-anonimo');
+    if (cb.checked) {
+        track.style.background   = '#0b438a';
+        thumb.style.transform    = 'translateX(20px)';
+        label.textContent        = 'Denúncia anônima ativada';
+        sub.textContent          = 'Seu nome não será exibido';
+        icone.style.color        = '#0b438a';
+        toggle.style.borderColor = '#0b438a';
+        toggle.style.background  = '#eef4ff';
+    } else {
+        track.style.background   = '#dde3f0';
+        thumb.style.transform    = 'translateX(0)';
+        label.textContent        = 'Enviar como anônimo';
+        sub.textContent          = 'Seu nome não aparecerá na publicação';
+        icone.style.color        = '#a0aec0';
+        toggle.style.borderColor = '#dde3f0';
+        toggle.style.background  = '#f8faff';
     }
-    atualizarRelogio();
-    setInterval(atualizarRelogio, 1000);
-</script>
+}
 
-<script>
+// ── Preview de fotos ──
 function adicionarPreviews(arquivos, grid) {
     Array.from(arquivos).forEach(arquivo => {
         const leitor = new FileReader();
@@ -264,8 +585,8 @@ function adicionarPreviews(arquivos, grid) {
 }
 
 function atualizarUI() {
-    const grid = document.getElementById('preview-grid');
-    const zona = document.getElementById('zona-upload');
+    const grid    = document.getElementById('preview-grid');
+    const zona    = document.getElementById('zona-upload');
     const btnMais = document.getElementById('btn-mais-fotos');
     const temFotos = grid.children.length > 0;
     grid.classList.toggle('hidden', !temFotos);
@@ -273,18 +594,11 @@ function atualizarUI() {
     btnMais.classList.toggle('hidden', !temFotos);
 }
 
-const inputFoto = document.getElementById('input-foto');
-if (inputFoto) {
-    inputFoto.addEventListener('change', function () {
-        adicionarPreviews(this.files, document.getElementById('preview-grid'));
-    });
-}
-
-const inputExtra = document.querySelector('[name="foto_extra"]');
-if (inputExtra) {
-    inputExtra.addEventListener('change', function () {
-        adicionarPreviews(this.files, document.getElementById('preview-grid'));
-    });
-}
+document.getElementById('input-foto').addEventListener('change', function () {
+    adicionarPreviews(this.files, document.getElementById('preview-grid'));
+});
+document.querySelector('[name="foto_extra"]').addEventListener('change', function () {
+    adicionarPreviews(this.files, document.getElementById('preview-grid'));
+});
 </script>
 {% endblock %}
