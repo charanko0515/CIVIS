@@ -3,38 +3,141 @@
 {% block breadcrumb %}Confirmação{% endblock %}
 
 {% block conteudo %}
-<div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 max-w-md w-full text-center">
+<div class="w-full flex justify-center px-4 py-8">
 
-    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#dbeafe;">
-        <i class="fa-solid fa-check text-2xl" style="color:#0b438a;"></i>
-    </div>
-    <h2 class="text-xl font-extrabold mb-1" style="color:#0b438a;">Denúncia enviada!</h2>
-    <p class="text-sm text-gray-400 mb-6">Sua ocorrência foi registrada com sucesso.</p>
+    <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 max-w-md w-full text-center">
 
-    <div class="rounded-xl p-4 mb-6" style="background:#eff6ff;border:1.5px solid #bfdbfe;">
-        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:#0b438a;">Número do Protocolo</p>
-        <p class="text-3xl font-extrabold" style="color:#0b438a;">#{{ protocolo }}</p>
-        <p class="text-xs text-gray-400 mt-1">Guarde este número para acompanhar sua denúncia</p>
-    </div>
-
-    <div class="text-left space-y-2 mb-6">
-        <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-            <span class="text-gray-400">Categoria</span>
-            <span class="font-semibold" style="color:#1e2d5a;">{{ categoria }}</span>
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+             style="background:#dbeafe;">
+            <i class="fa-solid fa-check text-2xl" style="color:#0b438a;"></i>
         </div>
-        <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-            <span class="text-gray-400">Localização</span>
-            <span class="font-semibold" style="color:#1e2d5a;">{{ "%.4f"|format(latitude|float) }}, {{ "%.4f"|format(longitude|float) }}</span>
-        </div>
-        <div class="flex justify-between text-sm">
-            <span class="text-gray-400">Data</span>
-            <span class="font-semibold" style="color:#1e2d5a;">{{ data }}</span>
-        </div>
-    </div>
 
-    <a href="/" style="background:#0b438a;"
-       class="block w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+        <h2 class="text-xl font-extrabold mb-1" style="color:#0b438a;">
+            Denúncia enviada!
+        </h2>
+
+        <p class="text-sm text-gray-400 mb-6">
+            Sua ocorrência foi registrada com sucesso.
+        </p>
+
+        <div class="rounded-xl p-4 mb-6"
+             style="background:#eff6ff;border:1.5px solid #bfdbfe;">
+
+            <p class="text-xs font-semibold uppercase tracking-widest mb-1"
+               style="color:#0b438a;">
+                Número do Protocolo
+            </p>
+
+            <p class="text-3xl font-extrabold" style="color:#0b438a;">
+                #{{ protocolo }}
+            </p>
+
+            <p class="text-xs text-gray-400 mt-1">
+                Guarde este número para acompanhar sua denúncia
+            </p>
+        </div>
+
+        <div class="text-left space-y-2 mb-6">
+
+            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                <span class="text-gray-400">Categoria</span>
+                <span class="font-semibold" style="color:#1e2d5a;">
+                    {{ categoria }}
+                </span>
+            </div>
+
+            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                <span class="text-gray-400">Local</span>
+
+                <span id="endereco"
+                      class="font-semibold text-right max-w-[65%]"
+                      style="color:#1e2d5a;">
+                    Carregando...
+                </span>
+            </div>
+
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Data</span>
+                <span class="font-semibold" style="color:#1e2d5a;">
+                    {{ data }}
+                </span>
+            </div>
+
+        </div>
+
+        <a href="/"
+           class="block w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition"
+           style="background:#0b438a;">
             Voltar ao início
-    </a>
+        </a>
+
+    </div>
 </div>
+
+<script>
+const enderecoCache = {};
+
+async function geocodeReverso(lat, lng) {
+    const key = `${lat},${lng}`;
+
+    if (enderecoCache[key]) {
+        return enderecoCache[key];
+    }
+
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`
+        );
+
+        const data = await res.json();
+        const a = data.address || {};
+
+        const rua =
+            a.road ||
+            a.pedestrian ||
+            a.path ||
+            '';
+
+        const bairro =
+            a.suburb ||
+            a.neighbourhood ||
+            a.quarter ||
+            '';
+
+        const cidade =
+            a.city ||
+            a.town ||
+            a.village ||
+            a.municipality ||
+            '';
+
+        const partes = [rua, bairro, cidade].filter(Boolean);
+
+        const resultado = partes.length
+            ? partes.join(', ')
+            : `${lat}, ${lng}`;
+
+        enderecoCache[key] = resultado;
+
+        return resultado;
+
+    } catch (erro) {
+        return `${lat}, ${lng}`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const lat = "{{ latitude }}";
+    const lng = "{{ longitude }}";
+
+    const campo = document.getElementById("endereco");
+
+    if (lat && lng) {
+        campo.textContent = await geocodeReverso(lat, lng);
+    } else {
+        campo.textContent = "Não informado";
+    }
+});
+</script>
+
 {% endblock %}
