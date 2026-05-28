@@ -208,8 +208,8 @@ RELACIONAMENTOS:
 | POST | `/up/<id>` | Toggle de up (retorna JSON sem recarregar) |
 | GET | `/logout` | Encerra sessão e redireciona para `/` |
 
----
 
+```
 ## Como rodar
 
 **1. Clone o repositório**
