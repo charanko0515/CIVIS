@@ -34,78 +34,106 @@
         </div>
         <h2 class="text-lg font-extrabold" style="color:#0b438a;">Ocorrências da comunidade</h2>
     </div>
+{% if denuncias %}
 
-    {% if denuncias %}
+<!-- Grid 3 colunas com cards completos -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for d in denuncias %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition-shadow duration-200"
+         onclick="abrirCard({{ loop.index0 }})">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {% for d in denuncias %}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition-shadow duration-200"
-             onclick="abrirCard({{ loop.index0 }})">
-
-            {% if d.foto_caminho %}
-            <div class="w-full overflow-hidden flex-shrink-0" style="aspect-ratio: 4/5;">
-                <img src="/{{ d.foto_caminho }}" class="w-full h-full object-cover" alt="{{ d.titulo }}">
-            </div>
-            {% else %}
-            <div class="w-full flex-shrink-0 flex flex-col items-center justify-center" style="aspect-ratio: 4/5; background:#e8f0fb;">
-                <i class="fa-solid
-                    {% if d.categoria == 'Buraco na via' or d.categoria == 'Vias' %} fa-road-circle-xmark
-                    {% elif d.categoria == 'Iluminação' %} fa-lightbulb
-                    {% elif d.categoria == 'Lixo' %} fa-trash-can
-                    {% elif d.categoria == 'Segurança' %} fa-shield-halved
-                    {% elif d.categoria == 'Vandalismo' %} fa-spray-can
-                    {% else %} fa-triangle-exclamation
-                    {% endif %} text-3xl mb-2" style="color:#0b438a; opacity:0.4;"></i>
-                <span class="text-xs font-semibold text-center px-2" style="color:#0b438a; opacity:0.5;">{{ d.categoria }}</span>
-            </div>
-            {% endif %}
-
-            <div class="p-4 flex flex-col flex-1">
-
-                <div class="flex items-center justify-between mb-2">
-                    <span class="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style="background:#dbeafe; color:#0b438a;">
-                        <i class="fa-solid fa-tag text-[9px]"></i>
-                        {{ d.categoria }}
-                    </span>
-                    <span class="text-xs text-gray-400 flex items-center gap-1">
-                        <i class="fa-regular fa-calendar text-[10px]"></i>
-                        {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
-                    </span>
-                </div>
-
-                <p class="text-sm text-gray-600 mb-3 leading-snug line-clamp-2">{{ d.descricao }}</p>
-
-                <p class="text-xs text-gray-400 mb-4 flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
-                    {{ "%.4f"|format(d.latitude|float) }}, {{ "%.4f"|format(d.longitude|float) }}
-                </p>
-
-                <button
-                    onclick="event.stopPropagation(); darUp(this)"
-                    data-id="{{ d.id }}"
-                    data-ups="{{ d.total_ups }}"
-                    data-ativo="{{ 'true' if d.id in ups_dados else 'false' }}"
-                    class="btn-up mt-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition w-fit
-                           {{ 'text-white' if d.id in ups_dados else 'border' }}"
-                    style="{{ 'background:#0b438a;' if d.id in ups_dados else 'border-color:#0b438a; color:#0b438a;' }}">
-                    <i class="fa-solid fa-arrow-up"></i>
-                    <span class="ups-count">{{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}</span>
-                </button>
-
-            </div>
+        <!-- Foto -->
+        {% if d.foto_caminho %}
+        <div class="w-full overflow-hidden flex-shrink-0" style="aspect-ratio: 4/4;">
+            <img src="/{{ d.foto_caminho }}"
+                 class="w-full h-full object-cover"
+                 alt="{{ d.titulo }}">
         </div>
-        {% endfor %}
-    </div>
+        {% else %}
+        <div class="w-full flex-shrink-0 flex flex-col items-center justify-center"
+             style="aspect-ratio: 4/4; background:#e8f0fb;">
+            <i class="fa-solid
+                {% if d.categoria == 'Buraco na via' %} fa-road-circle-xmark
+                {% elif d.categoria == 'Iluminação' %} fa-lightbulb
+                {% elif d.categoria == 'Lixo' %} fa-trash-can
+                {% elif d.categoria == 'Segurança' %} fa-shield-halved
+                {% else %} fa-triangle-exclamation
+                {% endif %} text-3xl mb-2"
+               style="color:#0b438a; opacity:0.4;"></i>
 
-    {% else %}
-    <div class="text-center py-24 text-gray-400">
-        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
-        <p class="text-sm">Nenhuma ocorrência registrada ainda.</p>
-        <a href="/denuncia" class="text-sm font-semibold mt-2 inline-block" style="color:#0b438a;">Seja o primeiro a registrar</a>
-    </div>
-    {% endif %}
+            <span class="text-xs font-semibold text-center px-2"
+                  style="color:#0b438a; opacity:0.5;">
+                {{ d.categoria }}
+            </span>
+        </div>
+        {% endif %}
 
+        <!-- Infos do card -->
+        <div class="p-3 flex flex-col flex-1">
+
+            <!-- Categoria + Data -->
+            <div class="flex items-center justify-between mb-2">
+                <span class="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
+                      style="background:#dbeafe; color:#0b438a;">
+                    <i class="fa-solid fa-tag text-[9px]"></i>
+                    {{ d.categoria }}
+                </span>
+
+                <span class="text-xs text-gray-400 flex items-center gap-1">
+                    <i class="fa-regular fa-calendar text-[10px]"></i>
+                    {{ d.data_registro[8:10] }}/{{ d.data_registro[5:7] }}/{{ d.data_registro[0:4] }}
+                </span>
+            </div>
+
+            <!-- Descrição -->
+            <p class="text-sm text-gray-600 mb-3 leading-snug line-clamp-2">
+                {{ d.descricao }}
+            </p>
+
+            <!-- Local -->
+            <p class="text-xs text-gray-400 mb-3 flex items-center gap-1">
+                <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
+                {{ "%.4f"|format(d.latitude|float) }},
+                {{ "%.4f"|format(d.longitude|float) }}
+            </p>
+
+            <!-- Botão Up -->
+            <button
+                onclick="event.stopPropagation(); darUp(this)"
+                data-id="{{ d.id }}"
+                data-ups="{{ d.total_ups }}"
+                data-ativo="{{ 'true' if d.id in ups_dados else 'false' }}"
+                class="btn-up mt-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition w-fit
+                       {{ 'text-white' if d.id in ups_dados else 'border' }}"
+                style="{{ 'background:#0b438a;' if d.id in ups_dados else 'border-color:#0b438a; color:#0b438a;' }}">
+
+                <i class="fa-solid fa-arrow-up"></i>
+
+                <span class="ups-count">
+                    {{ d.total_ups }} up{% if d.total_ups != 1 %}s{% endif %}
+                </span>
+            </button>
+
+        </div>
+    </div>
+    {% endfor %}
 </div>
+
+{% else %}
+<div class="text-center py-24 text-gray-400">
+    <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+
+    <p class="text-sm">
+        Nenhuma ocorrência registrada ainda.
+    </p>
+
+    <a href="/denuncia"
+       class="text-sm font-semibold mt-2 inline-block"
+       style="color:#0b438a;">
+        Seja o primeiro a registrar
+    </a>
+</div>
+{% endif %}
 
 <!-- ============================================================
      MODAL LIGHTBOX
