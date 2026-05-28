@@ -120,7 +120,7 @@ CIVIS/
 
 ---
 
-## Tecnologias
+## Diagrama de entidade e relacionamento
 
 ```
                 ┌──────────────────────┐
