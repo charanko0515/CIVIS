@@ -11,14 +11,29 @@
             <p class="text-xs text-gray-400">Junte-se à fiscalização comunitária</p>
         </div>
     </div>
-    
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="text-xs p-2.5 mb-4 rounded-xl border text-center font-medium" 
-               style="color:#dc2626;background:#fef2f2;border-color:#fecaca;">
-              ⚠️ {{ message }}
+          {% if category == 'success' %}
+          <div class="flex items-center gap-3 px-4 py-3 mb-4 rounded-xl border"
+               style="background:#f0fdf4; border-color:#bbf7d0;">
+              <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                   style="background:#dcfce7;">
+                  <i class="fa-solid fa-check text-xs" style="color:#16a34a;"></i>
+              </div>
+              <p class="text-sm font-semibold" style="color:#15803d;">{{ message }}</p>
           </div>
+          {% else %}
+          <div class="flex items-center gap-3 px-4 py-3 mb-4 rounded-xl border"
+               style="background:#fef2f2; border-color:#fecaca;">
+              <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                   style="background:#fee2e2;">
+                  <i class="fa-solid fa-exclamation text-xs" style="color:#dc2626;"></i>
+              </div>
+              <p class="text-sm font-semibold" style="color:#dc2626;">{{ message }}</p>
+          </div>
+          {% endif %}
         {% endfor %}
       {% endif %}
     {% endwith %}
@@ -49,14 +64,24 @@
             <input type="password" name="confirmar_senha" required placeholder="••••••••" id="confirmar"
                    class="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2">
         </div>
-        
-        <p id="erro-cpf" class="text-xs p-2 rounded-xl border hidden" style="color:#dc2626;background:#fef2f2;border-color:#fecaca;">
-            ⚠️ O CPF deve conter exatamente 11 números.
-        </p>
 
-        <p id="erro-senha" class="text-xs p-2 rounded-xl border hidden" style="color:#dc2626;background:#fef2f2;border-color:#fecaca;">
-            ⚠️ As senhas não coincidem.
-        </p>
+        <div id="erro-cpf" class="hidden flex items-center gap-3 px-4 py-3 rounded-xl border"
+             style="background:#fef2f2; border-color:#fecaca;">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                 style="background:#fee2e2;">
+                <i class="fa-solid fa-exclamation text-xs" style="color:#dc2626;"></i>
+            </div>
+            <p class="text-sm font-semibold" style="color:#dc2626;">O CPF deve conter exatamente 11 números.</p>
+        </div>
+
+        <div id="erro-senha" class="hidden flex items-center gap-3 px-4 py-3 rounded-xl border"
+             style="background:#fef2f2; border-color:#fecaca;">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                 style="background:#fee2e2;">
+                <i class="fa-solid fa-exclamation text-xs" style="color:#dc2626;"></i>
+            </div>
+            <p class="text-sm font-semibold" style="color:#dc2626;">As senhas não coincidem.</p>
+        </div>
 
         <button type="submit"
             style="background:#0b438a;"
@@ -75,11 +100,10 @@
 <script>
     const cpfInput = document.getElementById('cpf');
 
-    // Cria a máscara visual (000.000.000-00) enquanto o usuário digita
     cpfInput.addEventListener('input', e => {
-        let value = e.target.value.replace(/\D/g, ""); // Remove letras
+        let value = e.target.value.replace(/\D/g, "");
         if (value.length > 11) value = value.slice(0, 11);
-        
+
         if (value.length > 9) {
             value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, "$1.$2.$3-$4");
         } else if (value.length > 6) {
@@ -90,34 +114,27 @@
         e.target.value = value;
     });
 
-    // Validação combinada no envio do formulário
     document.querySelector('form').addEventListener('submit', e => {
         const erroSenha = document.getElementById('erro-senha');
-        const erroCpf = document.getElementById('erro-cpf');
-        
-        // Reseta os avisos
+        const erroCpf   = document.getElementById('erro-cpf');
+
         erroSenha.classList.add('hidden');
         erroCpf.classList.add('hidden');
 
         let temErro = false;
 
-        // 1. Valida o tamanho do CPF (Apenas números)
         const apenasNumeros = cpfInput.value.replace(/\D/g, '');
         if (apenasNumeros.length !== 11) {
             erroCpf.classList.remove('hidden');
             temErro = true;
         }
 
-        // 2. Valida as senhas
         if (document.getElementById('senha').value !== document.getElementById('confirmar').value) {
             erroSenha.classList.remove('hidden');
             temErro = true;
         }
 
-        // Se houver qualquer erro, impede o envio do formulário pro Flask
-        if (temErro) {
-            e.preventDefault();
-        }
+        if (temErro) e.preventDefault();
     });
 </script>
 {% endblock %}

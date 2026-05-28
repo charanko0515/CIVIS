@@ -8,19 +8,21 @@
 
     <!-- Saudação ao usuário -->
     {% if nome_usuario %}
-    <div class="relative overflow-hidden rounded-xl mb-4 px-4 py-2.5 flex items-center gap-3" style="background: linear-gradient(135deg, #0b438a 0%, #1a6abf 100%);">
-        <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold shadow-inner"
+    <div class="relative overflow-hidden rounded-2xl mb-6 px-6 py-5 flex items-center gap-4" style="background: linear-gradient(135deg, #0b438a 0%, #1a6abf 100%);">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-lg font-extrabold shadow-inner"
              style="background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.3);">
             {{ nome_usuario[0].upper() }}
         </div>
-        <div class="flex items-center gap-2 flex-1 min-w-0">
-            <p class="text-white text-sm font-extrabold leading-tight whitespace-nowrap">
+        <div>
+            <p class="text-white text-base font-extrabold leading-tight">
                 Olá, {{ nome_usuario.split()[0] }}! 👋
             </p>
-            <span class="text-xs" style="color:#a8d0f0;">— Veja o que está acontecendo na sua cidade.</span>
+            <p class="text-sm mt-0.5" style="color:#a8d0f0;">
+                Veja o que está acontecendo na sua cidade.
+            </p>
         </div>
         <div class="absolute right-0 top-0 h-full flex items-center opacity-10 pointer-events-none select-none" aria-hidden="true">
-            <i class="fa-solid fa-city text-white" style="font-size: 60px; margin-right: -8px;"></i>
+            <i class="fa-solid fa-city text-white" style="font-size: 90px; margin-right: -10px;"></i>
         </div>
     </div>
     {% endif %}
@@ -89,10 +91,10 @@
             </p>
 
             <!-- Local -->
-            <p class="text-xs text-gray-400 mb-3 flex items-center gap-1 card-local"
-               data-lat="{{ d.latitude }}" data-lng="{{ d.longitude }}">
-                <i class="fa-solid fa-location-dot flex-shrink-0" style="color:#0b438a;"></i>
-                <span class="local-texto truncate">Carregando...</span>
+            <p class="text-xs text-gray-400 mb-3 flex items-center gap-1">
+                <i class="fa-solid fa-location-dot" style="color:#0b438a;"></i>
+                {{ "%.4f"|format(d.latitude|float) }},
+                {{ "%.4f"|format(d.longitude|float) }}
             </p>
 
             <!-- Botão Up -->
@@ -192,21 +194,10 @@ const CAT_ICON = {
     'Meio Ambiente':   'fa-leaf',
     'Parques e Praças':'fa-tree',
     'Animais':         'fa-paw',
+    'Vandalismo':      'fa-spray-can-sparkles',
 };
 
 const enderecoCache = {};
-
-// Carrega endereços nos cards do feed
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.card-local').forEach(async el => {
-        const lat = parseFloat(el.dataset.lat);
-        const lng = parseFloat(el.dataset.lng);
-        const span = el.querySelector('.local-texto');
-        if (!span || isNaN(lat) || isNaN(lng)) return;
-        const end = await geocodeReverso(lat, lng);
-        span.textContent = end;
-    });
-});
 
 async function geocodeReverso(lat, lng) {
     const key = `${lat},${lng}`;
@@ -219,7 +210,7 @@ async function geocodeReverso(lat, lng) {
         const bairro = a.suburb || a.neighbourhood || a.quarter || '';
         const cidade = a.city || a.town || a.village || a.municipality || '';
         const estado = a.state_code || a.state || '';
-        const partes = [rua, bairro, cidade].filter(Boolean);
+        const partes = [rua, bairro, cidade, estado].filter(Boolean);
         const resultado = partes.length ? partes.join(', ') : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
         enderecoCache[key] = resultado;
         return resultado;
